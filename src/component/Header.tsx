@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react';
-import { ChevronDown, Menu, X, Phone, Play, ChevronRight, Speech } from 'lucide-react';
+import { ChevronDown, Menu, X, Phone, Play} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import SlidingButtons from './SlidingButtons';

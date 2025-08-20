@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/component/Header";
-import Footer from "@/component/Footer";
-import WhatsAppMessage from "@/component/calltoaction/WhatsAppMessage";
-import CallButton from "@/component/calltoaction/CallButton";
+import ClientLayoutWrapper from "@/component/ClientLayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,7 +9,7 @@ const geistSans = Geist({
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-geist-mono",  
   subsets: ["latin"],
 });
 
@@ -21,26 +18,20 @@ export const metadata: Metadata = {
   description: "Dikshant IAS is the one of the best ias coaching center in India",
 };
 
-export default function RootLayout({children,}: Readonly<{
+export default function RootLayout({
+  children,
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <>
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-        </head>
-        
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body>
-        <Header />
-        {children}
-        <Footer />
-        <WhatsAppMessage />
-        <CallButton />
-
+        {/* Client-side wrapper handles conditional rendering */}
+        <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
       </body>
-      </html>
-   
-    </>
+    </html>
   );
 }
