@@ -7,61 +7,67 @@ import {
   FileText,
   MessageSquare,
   Settings,
-  LogOut, // Import LogOut icon
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Sidebar() {
+  const pathname = usePathname();
+
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     window.location.href = "/admin/login";
   };
 
-  return (
-    <aside className="bg-white h-full">
-      <div className="p-6 flex flex-col justify-between h-full">
-        <nav className="space-y-2">
-          {/* Dashboard */}
-          <Link
-            href="/admin/dashboard"
-            className="flex items-center space-x-2 px-3 py-2 rounded-lg font-bold text-white bg-[#e94e4e] shadow-md"
-          >
-            <LayoutDashboard size={22} />
-            <span>Dashboard</span>
-          </Link>
+  const menus = [
+    { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/courses", label: "Courses", icon: BookOpen },
+    { href: "/admin/students", label: "Students", icon: Users },
+    { href: "/admin/messages", label: "Messages", icon: MessageSquare },
+    { href: "/admin/blogs", label: "Blogs", icon: FileText },
+    { href: "/admin/slider", label: "Slider", icon: BookOpen },
+    { href: "/admin/testimonial", label: "Testimonial", icon: Users },
+    { href: "/admin/result", label: "Result", icon: FileText },
+    { href: "/admin/gallery", label: "Gallery", icon: MessageSquare },
+    { href: "/admin/settings", label: "Settings", icon: Settings },
+  ];
 
-          {/* Main Menus */}
-          {[
-            { href: "/admin/courses", label: "Courses", icon: BookOpen },
-            { href: "/admin/students", label: "Students", icon: Users },
-            { href: "/admin/messages", label: "Messages", icon: MessageSquare },
-            { href: "/admin/blogs", label: "Blogs", icon: FileText },
-            { href: "/admin/slider", label: "Slider", icon: BookOpen },
-            { href: "/admin/testimonial", label: "Testimonial", icon: Users },
-            { href: "/admin/result", label: "Result", icon: FileText },
-            { href: "/admin/gallery", label: "Gallery", icon: MessageSquare },
-            { href: "/admin/settings", label: "Settings", icon: Settings },
-          ].map((item, idx) => (
+  return (
+    <aside className="fixed top-16 left-0 w-64 h-[calc(100vh-64px)] bg-white shadow-md flex flex-col">
+      {/* Scrollable menu */}
+      <nav className="flex-1 overflow-y-auto px-3 p-6 space-y-2">
+        {menus.map((item, idx) => {
+          const isActive = pathname === item.href;
+
+          return (
             <Link
               key={idx}
               href={item.href}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg font-medium text-gray-800 hover:bg-red-100 hover:text-[#e94e4e] transition-all duration-200"
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                isActive
+                  ? "bg-[#e94e4e] text-white shadow-md"
+                  : "text-gray-800 hover:bg-red-100 hover:text-[#e94e4e]"
+              }`}
             >
-              <item.icon size={22} className="text-[#e94e4e]" />
+              <item.icon
+                size={22}
+                className={`${isActive ? "text-white" : "text-[#e94e4e]"}`}
+              />
               <span>{item.label}</span>
             </Link>
-          ))}
+          );
+        })}
 
-          {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-2 w-full px-3 py-2 rounded-lg font-medium text-gray-800 hover:bg-red-100 hover:text-[#e94e4e] transition-all duration-200"
-          >
-            <LogOut size={22} className="text-[#e94e4e]" />
-            <span>Logout</span>
-          </button>
-        </nav>
-      </div>
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center space-x-2 w-full px-3 py-2 rounded-lg font-medium text-gray-800 hover:bg-red-100 hover:text-[#e94e4e] transition-all duration-200"
+        >
+          <LogOut size={22} className="text-[#e94e4e]" />
+          <span>Logout</span>
+        </button>
+      </nav>
     </aside>
   );
 }

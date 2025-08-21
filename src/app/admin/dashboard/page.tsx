@@ -38,7 +38,6 @@ export default function Dashboard() {
   const [enquiriesData, setEnquiriesData] = useState(initialEnquiriesData);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
-
   const totalPages = Math.ceil(enquiriesData.length / itemsPerPage);
 
   useEffect(() => {
@@ -54,7 +53,6 @@ export default function Dashboard() {
     if (confirm("Are you sure you want to delete this enquiry?")) {
       const updated = enquiriesData.filter((_, i) => i !== index);
       setEnquiriesData(updated);
-
       if ((currentPage - 1) * itemsPerPage >= updated.length && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       }
@@ -84,8 +82,7 @@ export default function Dashboard() {
     <AdminLayout>
       {/* Dashboard Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Students Card */}
-        <div className="w-70 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 shadow-md rounded-xl p-4 flex items-center gap-3 hover:shadow-lg hover:scale-105 transition-transform duration-200">
+        <div className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 shadow-md rounded-xl p-4 flex items-center gap-3 hover:shadow-lg hover:scale-105 transition-transform duration-200">
           <div className="bg-white/70 p-2 rounded-lg shadow-sm">
             <Users size={28} className="text-blue-500" />
           </div>
@@ -95,8 +92,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Courses Card */}
-        <div className="w-70 bg-gradient-to-r from-green-100 to-green-200 text-green-800 shadow-md rounded-2xl p-6 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-transform duration-200">
+        <div className="bg-gradient-to-r from-green-100 to-green-200 text-green-800 shadow-md rounded-2xl p-6 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-transform duration-200">
           <div className="bg-white/70 p-3 rounded-xl shadow-sm">
             <BookOpen size={32} className="text-green-500" />
           </div>
@@ -106,8 +102,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Enquiries Card */}
-        <div className="w-70 bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 shadow-md rounded-2xl p-6 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-transform duration-200">
+        <div className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 shadow-md rounded-2xl p-6 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-transform duration-200">
           <div className="bg-white/70 p-3 rounded-xl shadow-sm">
             <MessageSquare size={32} className="text-purple-500" />
           </div>
@@ -117,8 +112,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Blogs Card */}
-        <div className="w-70 bg-gradient-to-r from-orange-100 to-red-200 text-red-800 shadow-md rounded-2xl p-6 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-transform duration-200">
+        <div className="bg-gradient-to-r from-orange-100 to-red-200 text-red-800 shadow-md rounded-2xl p-6 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-transform duration-200">
           <div className="bg-white/70 p-3 rounded-xl shadow-sm">
             <FileText size={32} className="text-red-500" />
           </div>
@@ -129,7 +123,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Enhanced Graph */}
+      {/* Graph */}
       <div className="bg-white p-6 rounded-2xl shadow-md mb-8">
         <h2 className="text-lg font-semibold mb-4">Enquiries Overview</h2>
         <ResponsiveContainer width="100%" height={350}>
@@ -163,7 +157,7 @@ export default function Dashboard() {
       </div>
 
       {/* Enquiries Table */}
-      <div className="bg-white p-6 rounded-2xl shadow-md">
+      <div className="bg-white p-6 rounded-2xl shadow-md mb-8">
         <h2 className="text-lg font-semibold mb-4">Latest Enquiries</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-left border-collapse">

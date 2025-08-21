@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Poppins } from "next/font/google";
+import toast, { Toaster } from "react-hot-toast"; // import Toaster
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -14,28 +15,39 @@ const poppins = Poppins({
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem("adminToken", data.token); 
-      window.location.href = "/admin/dashboard";
-    } else {
-      setError(data.message);
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("adminToken", data.token); 
+        toast.success("Login successful!");
+        setTimeout(() => {
+          window.location.href = "/admin/dashboard";
+        }, 500);
+      } else {
+        toast.error(data.message || "Login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong!");
     }
   };
 
   return (
     <div className={`${poppins.className} flex min-h-screen bg-gray-100`}>
+      {/* Toaster must be rendered here */}
+      <Toaster position="top-center" reverseOrder={false} />
+
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-gray-200">
           {/* Logo */}
@@ -52,13 +64,6 @@ export default function AdminLogin() {
               Enter your credentials to login
             </p>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <p className="text-red-600 text-sm mb-4 text-center bg-red-50 py-2 rounded">
-              {error}
-            </p>
-          )}
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
