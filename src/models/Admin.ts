@@ -1,34 +1,43 @@
-"use server";
-
-import clientPromise from "@/lib/mongodb";
+// src/models/Admin.ts
+import { connectToDB } from "@/lib/mongodb";
+import mongoose, { Schema, Document, Model } from "mongoose";
 import bcrypt from "bcryptjs";
 
-// Updated Admin interface to include name
-export interface Admin {
-  _id?: string;
+export interface IAdmin extends Document {
   name: string;
   email: string;
   password: string;
 }
 
-// Find admin by email (unchanged)
-export async function findAdminByEmail(email: string): Promise<Admin | null> {
-  const client = await clientPromise;
-  const db = client.db("dikshantias");
-  const admin = await db.collection("admins").findOne({ email });
-  return admin as Admin | null;
-}
+const AdminSchema = new Schema<IAdmin>({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+});
 
-// Create admin now includes name
-export async function createAdmin(name: string, email: string, plainPassword: string): Promise<Admin> {
+const AdminModel: Model<IAdmin> =
+  mongoose.models.Admin || mongoose.model<IAdmin>("Admin", AdminSchema);
+
+export async function createAdmin(
+  name: string,
+  email: string,
+  plainPassword: string
+) {
+  await connectToDB();
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
-  const client = await clientPromise;
-  const db = client.db("dikshantias");
-  const result = await db.collection("admins").insertOne({ name, email, password: hashedPassword });
-  return { _id: result.insertedId.toString(), name, email, password: hashedPassword };
+  const admin = new AdminModel({ name, email, password: hashedPassword });
+  await admin.save();
+  return admin;
 }
 
-// Verify password (unchanged)
-export async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+export async function findAdminByEmail(email: string) {
+  await connectToDB();
+  return AdminModel.findOne({ email });
+}
+
+export async function verifyPassword(
+  plainPassword: string,
+  hashedPassword: string
+) {
   return bcrypt.compare(plainPassword, hashedPassword);
 }

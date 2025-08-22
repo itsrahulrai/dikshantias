@@ -46,20 +46,21 @@ export async function POST(req: Request) {
       uploadStream.end(buffer);
     });
 
-    // Save slider in MongoDB
+    // Save slider in MongoDB, including public_id
     const newSlider = await SliderModel.create({
       title,
       displayOrder,
       image: {
         url: uploadedImage.secure_url,
-        public_url: uploadedImage.secure_url, // required by schema
+        public_url: uploadedImage.secure_url, // for frontend display
+        public_id: uploadedImage.public_id,    // needed for deletion
       },
       active: true,
     });
 
     return NextResponse.json(newSlider, { status: 201 });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error creating slider:", err);
-    return NextResponse.json({ error: "Failed to create slider" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Failed to create slider" }, { status: 500 });
   }
 }

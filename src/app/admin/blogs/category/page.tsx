@@ -3,25 +3,28 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/component/admin/AdminLayout";
 import { Trash2, Edit2, Plus } from "lucide-react";
-import SliderModal from "@/component/admin/SliderModal";
 import toast from "react-hot-toast";
-import ConfirmDialog from "@/component/admin/ConfirmDialog";
+import BlogCategoryModal from "@/component/admin/BlogCategoryModal";
+import ConfirmDialog from "@/component/admin/ConfirmDialog"; // ✅ Import dialog
 
-interface Slider {
+interface BlogCategory {
   _id: string;
-  title: string;
-  displayOrder: number;
+  name: string;
+  slug: string;
   active: boolean;
-  image?: { url: string };
+  createdAt?: string;
 }
 
-export default function SliderPage() {
+export default function BlogCategoryPage() {
   const [authorized, setAuthorized] = useState(false);
-  const [sliders, setSliders] = useState<Slider[]>([]);
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showInsertSlider, setShowInsertSlider] = useState(false);
-  const [editingSlider, setEditingSlider] = useState<Slider | null>(null);
+  const [showInsertModal, setShowInsertModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<BlogCategory | null>(
+    null
+  );
 
+  // For confirm dialog
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<() => void>(() => {});
   const [confirmTitle, setConfirmTitle] = useState("");
@@ -30,44 +33,46 @@ export default function SliderPage() {
 
   const itemsPerPage = 5;
 
-  // Check authorization & fetch sliders
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
     if (!token) window.location.href = "/admin/login";
     else {
       setAuthorized(true);
-      fetchSliders();
+      fetchCategories();
     }
   }, []);
 
-  const fetchSliders = async () => {
+  const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/admin/sliders");
+      const res = await fetch("/api/admin/blog-categories");
       const data = await res.json();
-      setSliders(data);
+      setCategories(data);
     } catch (err) {
-      console.error("Failed to fetch sliders:", err);
+      console.error("Failed to fetch categories:", err);
     }
   };
 
-  // DELETE slider
   const handleDelete = (id: string) => {
-    setConfirmTitle("Are you sure you want to delete this slider?");
-    setConfirmMessage("You won't be able to revert this!");
-    setConfirmBtnText("Delete");
+    setConfirmTitle("Are you sure?");
+    setConfirmMessage("You won’t be able to revert this action!");
+    setConfirmBtnText("Yes, Delete");
     setConfirmAction(() => async () => {
       try {
-        const res = await fetch(`/api/admin/sliders/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/admin/blog-categories/${id}`, {
+          method: "DELETE",
+        });
         const data = await res.json();
+
         if (!res.ok) {
-          toast.error(data.error || "Failed to delete slider");
+          toast.error(data.error || "Failed to delete category");
           return;
         }
-        fetchSliders();
-        toast.success("Slider deleted successfully!");
+
+        fetchCategories();
+        toast.success("Category deleted successfully!");
       } catch (err) {
-        console.error(err);
-        toast.error("Failed to delete slider");
+        console.error("Delete error:", err);
+        toast.error("Failed to delete category");
       } finally {
         setConfirmOpen(false);
       }
@@ -75,40 +80,43 @@ export default function SliderPage() {
     setConfirmOpen(true);
   };
 
-  // Toggle slider active status
-  const handleToggleActive = (id: string, currentStatus: boolean) => {
-    setConfirmTitle(currentStatus ? "Deactivate this slider?" : "Activate this slider?");
-    setConfirmMessage(
-      `Are you sure you want to ${currentStatus ? "deactivate" : "activate"} this slider?`
+
+
+ const handleToggleActive = (id: string, currentStatus: boolean) => {
+    setConfirmTitle(
+      currentStatus ? "Deactivate this category?" : "Activate this category?"
     );
+    setConfirmMessage("Do you want to change the status of this category?");
     setConfirmBtnText(currentStatus ? "Yes, Deactivate" : "Yes, Activate");
+
     setConfirmAction(() => async () => {
       try {
-        const res = await fetch(`/api/admin/sliders/${id}`, {
+        const res = await fetch(`/api/admin/blog-categories/${id}`, {
           method: "PUT",
           body: JSON.stringify({ active: !currentStatus }),
           headers: { "Content-Type": "application/json" },
         });
 
         if (res.ok) {
-          setSliders((prev) =>
-            prev.map((slider) =>
-              slider._id === id ? { ...slider, active: !currentStatus } : slider
+          setCategories((prev) =>
+            prev.map((cat) =>
+              cat._id === id ? { ...cat, active: !currentStatus } : cat
             )
           );
-          toast.success(`Slider has been ${!currentStatus ? "activated" : "deactivated"}`);
+          toast.success("Category status updated!");
         } else {
-          toast.error("Something went wrong.");
+          toast.error("Failed to update status");
         }
       } catch (err) {
-        toast.error("Failed to update slider.");
+        console.error("Update error:", err);
+        toast.error("Something went wrong");
       } finally {
         setConfirmOpen(false);
       }
     });
+
     setConfirmOpen(true);
   };
-
   if (!authorized)
     return (
       <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -123,79 +131,77 @@ export default function SliderPage() {
       </div>
     );
 
-  const totalPages = Math.ceil(sliders.length / itemsPerPage);
-  const paginatedData = sliders.slice(
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
+  const paginatedData = categories.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   return (
     <AdminLayout>
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Sliders</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Blog Categories</h1>
 
-      {/* Slider Table */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-700">All Sliders</h2>
+          <h2 className="text-xl font-semibold text-gray-700">All Categories</h2>
           <button
             onClick={() => {
-              setEditingSlider(null);
-              setShowInsertSlider(true);
+              setEditingCategory(null);
+              setShowInsertModal(true);
             }}
             className="flex items-center gap-1 px-3 py-1.5 bg-[#e94e4e] text-white text-sm rounded-md hover:bg-red-600 shadow transition"
           >
-            <Plus size={14} /> New Slider
+            <Plus size={14} /> New Category
           </button>
         </div>
 
+        {/* Table stays same */}
         <div className="overflow-x-auto">
           <table className="w-full border-collapse bg-white rounded-2xl shadow-lg overflow-hidden">
             <thead className="bg-gray-100 text-gray-700 text-sm uppercase tracking-wide font-semibold">
               <tr>
-                <th className="py-4 px-5 text-left border-b border-gray-200 rounded-tl-2xl">Image</th>
-                <th className="py-4 px-5 text-left border-b border-gray-200">Title</th>
-                <th className="py-4 px-5 text-center border-b border-gray-200">Order</th>
-                <th className="py-4 px-5 text-center border-b border-gray-200">Status</th>
-                <th className="py-4 px-5 text-center border-b border-gray-200 rounded-tr-2xl">Actions</th>
+                <th className="py-4 px-5 text-left border-b border-gray-200">
+                  Name
+                </th>
+                <th className="py-4 px-5 text-left border-b border-gray-200">
+                  Slug
+                </th>
+                <th className="py-4 px-5 text-center border-b border-gray-200">
+                  Status
+                </th>
+                <th className="py-4 px-5 text-center border-b border-gray-200">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="text-gray-800 text-sm">
               {paginatedData.length > 0 ? (
-                paginatedData.map((slider) => (
-                  <tr key={slider._id} className="hover:bg-gray-50 transition-colors border-b border-gray-200">
-                    <td className="py-3 px-5">
-                      {slider.image?.url ? (
-                        <div className="h-16 w-48 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                          <img
-                            src={slider.image.url}
-                            alt={slider.title}
-                            className="max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="h-16 w-48 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-400">
-                          No Image
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3 px-5 font-medium">{slider.title}</td>
-                    <td className="py-3 px-5 text-center">
-                      <span className="inline-block px-2 py-0.5 text-xs font-medium text-white bg-blue-500 rounded-full">
-                        #{slider.displayOrder}
-                      </span>
-                    </td>
+                paginatedData.map((cat) => (
+                  <tr
+                    key={cat._id}
+                    className="hover:bg-gray-50 transition-colors border-b border-gray-200"
+                  >
+                    <td className="py-3 px-5 font-medium">{cat.name}</td>
+                    <td className="py-3 px-5 text-gray-500">{cat.slug}</td>
                     <td className="py-3 px-5 text-center">
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={slider.active} readOnly className="sr-only" />
+                        <input
+                          type="checkbox"
+                          checked={cat.active}
+                          readOnly
+                          className="sr-only"
+                        />
                         <div
-                          onClick={() => handleToggleActive(slider._id, slider.active)}
+                          onClick={() =>
+                            handleToggleActive(cat._id, cat.active)
+                          }
                           className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 cursor-pointer ${
-                            slider.active ? "bg-green-500" : "bg-gray-300"
+                            cat.active ? "bg-green-500" : "bg-gray-300"
                           }`}
                         >
                           <span
                             className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
-                              slider.active ? "translate-x-6" : "translate-x-0"
+                              cat.active ? "translate-x-6" : "translate-x-0"
                             }`}
                           ></span>
                         </div>
@@ -205,8 +211,8 @@ export default function SliderPage() {
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => {
-                            setEditingSlider(slider);
-                            setShowInsertSlider(true);
+                            setEditingCategory(cat);
+                            setShowInsertModal(true);
                           }}
                           className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition transform hover:scale-110"
                           title="Edit"
@@ -214,7 +220,7 @@ export default function SliderPage() {
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(slider._id)}
+                          onClick={() => handleDelete(cat._id)}
                           className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition transform hover:scale-110"
                           title="Delete"
                         >
@@ -226,8 +232,11 @@ export default function SliderPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-gray-500 italic border-b border-gray-200">
-                    No sliders found
+                  <td
+                    colSpan={4}
+                    className="text-center py-8 text-gray-500 italic border-b border-gray-200"
+                  >
+                    No categories found
                   </td>
                 </tr>
               )}
@@ -241,7 +250,9 @@ export default function SliderPage() {
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
             className={`px-3 py-1 rounded-md font-medium ${
-              currentPage === 1 ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              currentPage === 1
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Prev
@@ -251,7 +262,9 @@ export default function SliderPage() {
               key={i}
               onClick={() => setCurrentPage(i + 1)}
               className={`px-3 py-1 rounded-md font-medium ${
-                currentPage === i + 1 ? "bg-[#e94e4e] text-white shadow-md" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                currentPage === i + 1
+                  ? "bg-[#e94e4e] text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
               {i + 1}
@@ -261,7 +274,9 @@ export default function SliderPage() {
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
             className={`px-3 py-1 rounded-md font-medium ${
-              currentPage === totalPages ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              currentPage === totalPages
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Next
@@ -269,16 +284,16 @@ export default function SliderPage() {
         </div>
       </div>
 
-      {/* Slider Modal */}
-      {showInsertSlider && (
-        <SliderModal
-          slider={editingSlider || undefined}
-          onClose={() => setShowInsertSlider(false)}
-          onSubmit={fetchSliders}
+      {/* Modal */}
+      {showInsertModal && (
+        <BlogCategoryModal
+          category={editingCategory || undefined}
+          onClose={() => setShowInsertModal(false)}
+          onSubmit={fetchCategories}
         />
       )}
 
-      {/* Confirm Dialog */}
+      {/*Custom Confirm Dialog */}
       <ConfirmDialog
         isOpen={confirmOpen}
         title={confirmTitle}

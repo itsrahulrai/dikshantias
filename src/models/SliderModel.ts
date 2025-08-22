@@ -6,6 +6,7 @@ export interface ISlider extends Document {
   image: {
     url: string;
     public_url: string;
+    public_id: string;
   };
   displayOrder: number;
   active: boolean;
@@ -19,6 +20,7 @@ const SliderSchema: Schema = new Schema(
     image: {
       url: { type: String, required: true },
       public_url: { type: String, required: true },
+      public_id: { type: String, required: true },
     },
     displayOrder: { type: Number, default: 0 },
     active: { type: Boolean, default: true },
@@ -26,8 +28,10 @@ const SliderSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-// ✅ Fix for Next.js hot reload issue (avoids OverwriteModelError)
+// ✅ Fix for Next.js hot reload & explicitly set collection name
 const SliderModel: Model<ISlider> =
-  mongoose.models.Slider || mongoose.model<ISlider>("Slider", SliderSchema);
+  mongoose.models.Slider ||
+  mongoose.model<ISlider>("Slider", SliderSchema, "sliders");
 
 export default SliderModel;
+  
