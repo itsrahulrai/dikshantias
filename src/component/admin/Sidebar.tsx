@@ -34,7 +34,7 @@ export default function Sidebar() {
       icon: FileText,
       children: [
         { href: "/admin/blogs/category", label: "Category" },
-        { href: "/admin/blogs/create", label: "Blogs" },
+        { href: "/admin/blogs", label: "Blogs" },
       ],
     },
     { href: "/admin/slider", label: "Slider", icon: BookOpen },
