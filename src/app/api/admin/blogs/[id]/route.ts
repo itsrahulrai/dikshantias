@@ -110,6 +110,39 @@ export async function PUT(
 }
 
 
+
+// ✅ PATCH - Toggle blog active status
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await connectToDB();
+    const { id } = params;
+
+    const { active } = await req.json();
+
+    const updatedBlog = await BlogsModel.findByIdAndUpdate(
+      id,
+      { active },
+      { new: true }
+    );
+
+    if (!updatedBlog) {
+      return NextResponse.json({ error: "Blog not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      { message: "Blog status updated", blog: updatedBlog },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("Error toggling blog status:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+
 // ✅ DELETE - Remove blog
 export async function DELETE(
   req: Request,

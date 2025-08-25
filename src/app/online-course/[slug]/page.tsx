@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Star, Clock, Users, Globe, Award, Smartphone, Infinity, Check, Book, CalendarDays, PlayCircle, PlayIcon } from 'lucide-react';
+import { Star, Clock, Users, Globe, Smartphone, Infinity, Book, CalendarDays, PlayIcon } from 'lucide-react';
 import Image from 'next/image';
 import { Play } from 'next/font/google';
 

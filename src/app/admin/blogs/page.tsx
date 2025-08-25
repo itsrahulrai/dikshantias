@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminLayout from "@/component/admin/AdminLayout";
-import { Trash2, Edit2, Plus } from "lucide-react";
+import { Trash2, Edit2, Plus,Search, List, Activity  } from "lucide-react";
 import toast from "react-hot-toast";
 import ConfirmDialog from "@/component/admin/ConfirmDialog";
 
@@ -32,8 +32,13 @@ export default function BlogPage() {
   const [confirmTitle, setConfirmTitle] = useState("");
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmBtnText, setConfirmBtnText] = useState("Confirm");
-
   const itemsPerPage = 5;
+  
+  const [filterCategory, setFilterCategory] = useState<string>(""); // category filter
+  const [filterStatus, setFilterStatus] = useState<string>(""); // "active", "inactive", or ""
+  const [searchTitle, setSearchTitle] = useState<string>(""); // search by title
+
+
 
   // Check authorization & fetch blogs
   useEffect(() => {
@@ -82,43 +87,68 @@ export default function BlogPage() {
     setConfirmOpen(true);
   };
 
-  // Toggle blog active status
-  const handleToggleActive = (id: string, currentStatus: boolean) => {
-    setConfirmTitle(currentStatus ? "Deactivate this blog?" : "Activate this blog?");
-    setConfirmMessage(
-      `Are you sure you want to ${currentStatus ? "deactivate" : "activate"} this blog?`
-    );
-    setConfirmBtnText(currentStatus ? "Yes, Deactivate" : "Yes, Activate");
-    setConfirmAction(() => async () => {
-      try {
-        const res = await fetch(`/api/admin/blogs/${id}`, {
-          method: "PUT",
-          body: JSON.stringify({ active: !currentStatus }),
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (res.ok) {
-          setBlogs((prev) =>
-            prev.map((blog) => (blog._id === id ? { ...blog, active: !currentStatus } : blog))
-          );
-          toast.success(`Blog has been ${!currentStatus ? "activated" : "deactivated"}`);
-        } else {
-          toast.error("Something went wrong.");
-        }
-      } catch (err) {
-        toast.error("Failed to update blog.");
-      } finally {
-        setConfirmOpen(false);
-      }
-    });
-    setConfirmOpen(true);
-  };
-
-  const totalPages = Math.ceil(blogs.length / itemsPerPage);
-  const paginatedData = blogs.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+// Toggle blog active status
+const handleToggleActive = (id: string, currentStatus: boolean) => {
+  setConfirmTitle(currentStatus ? "Deactivate this blog?" : "Activate this blog?");
+  setConfirmMessage(
+    `Are you sure you want to ${currentStatus ? "deactivate" : "activate"} this blog?`
   );
+  setConfirmBtnText(currentStatus ? "Yes, Deactivate" : "Yes, Activate");
+
+  setConfirmAction(() => async () => {
+    try {
+      const res = await fetch(`/api/admin/blogs/${id}`, {
+        method: "PATCH", // 
+        body: JSON.stringify({ active: !currentStatus }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setBlogs((prev) =>
+          prev.map((blog) =>
+            blog._id === id ? { ...blog, active: data.blog.active } : blog
+          )
+        );
+        toast.success(`Blog has been ${!currentStatus ? "activated" : "deactivated"}`);
+      } else {
+        toast.error("Something went wrong.");
+      }
+    } catch (err) {
+      toast.error("Failed to update blog.");
+    } finally {
+      setConfirmOpen(false);
+    }
+  });
+
+  setConfirmOpen(true);
+};
+
+
+// Toggle blog active status
+const filteredBlogs = blogs.filter((blog) => {
+  const matchesCategory = filterCategory ? blog.category?.name === filterCategory : true;
+  const matchesStatus =
+    filterStatus === "true" ? blog.active :
+    filterStatus === "false" ? !blog.active : true;
+
+  const searchLower = searchTitle.toLowerCase();
+  const matchesTitleOrAuthor =
+    blog.title.toLowerCase().includes(searchLower) ||
+    (blog.postedBy?.toLowerCase().includes(searchLower));
+
+  return matchesCategory && matchesStatus && matchesTitleOrAuthor;
+});
+
+
+// Pagination
+const totalPages = Math.ceil(filteredBlogs.length / itemsPerPage);
+const paginatedData = filteredBlogs.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage
+);
+
+
 
   if (!authorized)
     return (
@@ -140,15 +170,74 @@ export default function BlogPage() {
 
       {/* Blogs Table */}
       <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-700">All Blogs</h2>
-          <button
-            onClick={() => router.push("/admin/blogs/add")}
-            className="flex items-center gap-1 px-3 py-1.5 bg-[#e94e4e] text-white text-sm rounded-md hover:bg-red-600 shadow transition"
-          >
-            <Plus size={14} /> New Blog
-          </button>
-        </div>
+   
+
+
+
+       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+  {/* Left: Title */}
+  <h2 className="text-xl font-semibold text-gray-700">All Blogs</h2>
+
+    {/* Middle: Filters */}
+    
+<div className="flex flex-wrap gap-3 items-center bg-white p-4 rounded-xl shadow-sm">
+  {/* Category Filter */}
+  <div className="relative w-48">
+  {/* Icon inside the select */}
+  <List className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+
+  {/* Category select */}
+  <select
+    value={filterCategory}
+    onChange={(e) => setFilterCategory(e.target.value)}
+    className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition text-gray-700"
+  >
+    <option value="">All Categories</option>
+    {Array.from(new Set(blogs.map((b) => b.category?.name))).map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+  {/* Status Filter */}
+  <div className="relative">
+    <Activity className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+    <select
+      value={filterStatus}
+      onChange={(e) => setFilterStatus(e.target.value)}
+      className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+    >
+      <option value="">All Status</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+  </div>
+
+  {/* Title Search */}
+  <div className="relative flex-1 min-w-[200px]">
+    <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+    <input
+      type="text"
+      value={searchTitle}
+      onChange={(e) => setSearchTitle(e.target.value)}
+      placeholder="Search..."
+      className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+    />
+  </div>
+</div>
+
+  {/* Right: Add Button */}
+  <button
+    onClick={() => router.push("/admin/blogs/add")}
+    className="flex items-center gap-1 px-3 py-1.5 bg-[#e94e4e] text-white text-sm rounded-md hover:bg-red-600 shadow transition"
+  >
+    <Plus size={14} /> New Blog
+  </button>
+</div>
+
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse bg-white rounded-2xl shadow-lg overflow-hidden">

@@ -6,6 +6,7 @@ import AdminLayout from "@/component/admin/AdminLayout";
 import ImageUpload from "@/component/admin/ImageUpload";
 import { CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import RichTextEditor from "@/component/admin/RichTextEditor";
 
 interface Category {
   _id: string;
@@ -299,18 +300,20 @@ export default function EditBlogPage() {
                                 required
                             />
                         </div>
-
+                          {/* Full Content */}
                         <div>
-                            <label className="block font-medium text-gray-700 mb-1">
-                                Full Content
-                            </label>
-                            <textarea
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-1 focus:ring-[#e94e4e] transition outline-none"
-                                rows={6}
-                                required
-                            />
+                        <label className="block font-medium text-gray-700 mb-1">Full Content</label>
+
+                        {/* Rich Text Editor (always used, both add + edit) */}
+                        <RichTextEditor value={content} onChange={setContent} />
+
+                        {/* Optional: Hidden textarea to submit raw HTML (for server compatibility) */}
+                        <textarea
+                            name="content"
+                            value={content}
+                            readOnly
+                            className="hidden"
+                        />
                         </div>
                     </div>
                 </div>
