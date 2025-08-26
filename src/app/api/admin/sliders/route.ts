@@ -10,6 +10,7 @@ export async function GET() {
     await connectToDB();
     console.log("Fetching all sliders");
     const sliders = await SliderModel.find();
+    console.log(`Found ${sliders.length} sliders`);
     return NextResponse.json(sliders);
   } catch (error) {
     console.error("Error fetching sliders:", error);

@@ -1,56 +1,52 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import AdminLayout from "@/component/admin/AdminLayout";
 import ImageUpload from "@/component/admin/ImageUpload";
 import { CheckCircle, Play } from "lucide-react";
 import toast from "react-hot-toast";
 import RichTextEditor from "@/component/admin/RichTextEditor";
 
-export default function AddCoursePage() {
+export default function CourseFormPage() {
+    const params = useParams();
     const router = useRouter();
+    const courseId = params?.id as string | undefined;
 
     // 📌 Basic Info
     const [title, setTitle] = useState("");
     const [slug, setSlug] = useState("");
+    const [isSlugEdited, setIsSlugEdited] = useState(false);
+    
     const [shortContent, setShortContent] = useState("");
     const [content, setContent] = useState("");
     const [active, setActive] = useState(true);
 
-    // new states
+    // 📌 Basic Extra
     const [courseMode, setCourseMode] = useState("");
-    const [lectures, setLectures] = useState("");
+    const [lectures, setLectures] = useState<number | "">("");
     const [duration, setDuration] = useState("");
     const [languages, setLanguages] = useState("");
-    const [displayOrder, setDisplayOrder] = useState("");
+    const [displayOrder, setDisplayOrder] = useState<number | "">("");
 
     // 📌 Pricing
-    const [originalPrice, setOriginalPrice] = useState("");
-    const [price, setPrice] = useState("");
-    const [totalFee, setTotalFee] = useState("");
-    const [oneTimeFee, setOneTimeFee] = useState("");
-    const [firstInstallment, setFirstInstallment] = useState("");
-    const [secondInstallment, setSecondInstallment] = useState("");
-    const [thirdInstallment, setThirdInstallment] = useState("");
-    const [fourthInstallment, setFourthInstallment] = useState("");
+    const [originalPrice, setOriginalPrice] = useState<number | "">("");
+    const [price, setPrice] = useState<number | "">("");
+    const [totalFee, setTotalFee] = useState<number | "">("");
+    const [oneTimeFee, setOneTimeFee] = useState<number | "">("");
+    const [firstInstallment, setFirstInstallment] = useState<number | "">("");
+    const [secondInstallment, setSecondInstallment] = useState<number | "">("");
+    const [thirdInstallment, setThirdInstallment] = useState<number | "">("");
+    const [fourthInstallment, setFourthInstallment] = useState<number | "">("");
 
     // 📌 Media
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageAlt, setImageAlt] = useState("");
+    const [imageUrl, setImageUrl] = useState(""); // ✅ keep existing image
 
     const [demoVideo, setDemoVideo] = useState("");
     const [videoInput, setVideoInput] = useState("");
     const [videos, setVideos] = useState<string[]>([]);
-
-    const addVideo = () => {
-        if (!videoInput.trim()) return;
-        setVideos([...videos, videoInput.trim()]);
-        setVideoInput("");
-    };
-    const removeVideo = (index: number) => {
-        setVideos(videos.filter((_, i) => i !== index));
-    };
 
     // 📌 SEO
     const [metaTitle, setMetaTitle] = useState("");
@@ -63,118 +59,202 @@ export default function AddCoursePage() {
     const [index, setIndex] = useState(true);
     const [follow, setFollow] = useState(true);
 
-    // Loading / Submitting
+    // States
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
-    // Auto-generate slug
+    // 🔹 Fetch course if editing
     useEffect(() => {
-        if (title) {
-            setSlug(
-                title
-                    .toLowerCase()
-                    .trim()
-                    .replace(/[^a-z0-9\s-]/g, "")
-                    .replace(/\s+/g, "-")
-                    .replace(/-+/g, "-")
-            );
-        } else {
-            setSlug(""); // clear slug if title is empty
+        if (!courseId || courseId === "new") {
+            setLoading(false);
+            return;
         }
-    }, [title]);
+
+        const fetchCourse = async () => {
+            try {
+                const res = await fetch(`/api/admin/courses/${courseId}`);
+                if (!res.ok) throw new Error("Failed to fetch course");
+                const data = await res.json();
+
+                // ✅ Pre-fill states
+                setTitle(data.title);
+                setSlug(data.slug);
+                setShortContent(data.shortContent || "");
+                setContent(data.content || "");
+                setActive(data.active);
+
+                setCourseMode(data.courseMode || "");
+                setLectures(data.lectures ?? "");
+                setDuration(data.duration || "");
+                setLanguages(data.languages || "");
+                setDisplayOrder(data.displayOrder ?? "");
+
+                setOriginalPrice(data.originalPrice ?? "");
+                setPrice(data.price ?? "");
+                setTotalFee(data.totalFee ?? "");
+                setOneTimeFee(data.oneTimeFee ?? "");
+                setFirstInstallment(data.firstInstallment ?? "");
+                setSecondInstallment(data.secondInstallment ?? "");
+                setThirdInstallment(data.thirdInstallment ?? "");
+                setFourthInstallment(data.fourthInstallment ?? "");
+
+                setImageUrl(data.image?.url || "");
+                setImageAlt(data.image?.alt || "");
+
+                setDemoVideo(data.demoVideo || "");
+                setVideos(data.videos || []);
+
+                setMetaTitle(data.metaTitle || "");
+                setMetaDescription(data.metaDescription || "");
+                setMetaKeywords(data.metaKeywords || []);
+                setCanonicalUrl(data.canonicalUrl || "");
+                setOgTitle(data.ogTitle || "");
+                setOgDescription(data.ogDescription || "");
+                setIndex(data.index);
+                setFollow(data.follow);
+
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to load course");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCourse();
+    }, [courseId]);
+
+    // 🔹 Auto slug from title
+useEffect(() => {
+  if (!isSlugEdited) {
+    if (title) {
+      setSlug(
+        title
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+      );
+    } else {
+      setSlug(""); // clear slug if title is empty
+    }
+  }
+}, [title]);
+
+// Handle manual slug change
+const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setSlug(e.target.value);
+  setIsSlugEdited(true); // mark as manually edited
+};
 
 
-    // fake loading
-    useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 500);
-        return () => clearTimeout(timer);
-    }, []);
+    // 🔹 Helpers for videos
+    const addVideo = () => {
+        if (videoInput.trim()) {
+            setVideos([...videos, videoInput.trim()]);
+            setVideoInput("");
+        }
+    };
 
-    // SEO keywords
+    const removeVideo = (index: number) => {
+        setVideos(videos.filter((_, i) => i !== index));
+    };
+
+    // 🔹 Helpers for meta keywords
     const addMetaKeyword = () => {
         if (metaKeywordInput.trim() && !metaKeywords.includes(metaKeywordInput.trim())) {
             setMetaKeywords([...metaKeywords, metaKeywordInput.trim()]);
             setMetaKeywordInput("");
         }
     };
+
     const removeMetaKeyword = (keyword: string) => {
         setMetaKeywords(metaKeywords.filter((k) => k !== keyword));
     };
 
-    // Submit
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
 
-        try {
-            const formData = new FormData();
+// 🔹 Handle Update Only
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setSubmitting(true);
 
-            // 📌 Basic Info
-            formData.append("title", title);
-            formData.append("slug", slug);
-            formData.append("shortContent", shortContent);
-            formData.append("content", content);
-            formData.append("active", JSON.stringify(active));
-            formData.append("courseMode", courseMode);
-            if (lectures) formData.append("lectures", String(lectures));
-            if (duration) formData.append("duration", duration);
-            if (languages) formData.append("languages", languages);
-            if (displayOrder) formData.append("displayOrder", String(displayOrder));
+  try {
+    if (!courseId) {
+      toast.error("Course ID missing ❌");
+      setSubmitting(false);
+      return;
+    }
 
-            // 📌 Pricing
-            if (originalPrice) formData.append("originalPrice", String(originalPrice));
-            if (price) formData.append("price", String(price));
-            if (totalFee) formData.append("totalFee", String(totalFee));
-            if (oneTimeFee) formData.append("oneTimeFee", String(oneTimeFee));
-            if (firstInstallment) formData.append("firstInstallment", String(firstInstallment));
-            if (secondInstallment) formData.append("secondInstallment", String(secondInstallment));
-            if (thirdInstallment) formData.append("thirdInstallment", String(thirdInstallment));
-            if (fourthInstallment) formData.append("fourthInstallment", String(fourthInstallment));
+    const formData = new FormData();
 
-            // 📌 Image
-            if (imageFile) {
-                formData.append("image", imageFile);
-                if (imageAlt) formData.append("imageAlt", imageAlt);
-            }
+    formData.append("title", title);
+    formData.append("slug", slug);
+    formData.append("shortContent", shortContent);
+    formData.append("content", content);
+    formData.append("active", JSON.stringify(active));
+    formData.append("courseMode", courseMode);
 
-            // 📌 Videos
-            if (demoVideo) formData.append("demoVideo", demoVideo);
-            if (videos.length > 0) {
-                formData.append("videos", JSON.stringify(videos));
-            }
+    if (lectures !== "") formData.append("lectures", String(lectures));
+    if (duration) formData.append("duration", duration);
+    if (languages) formData.append("languages", languages);
+    if (displayOrder !== "") formData.append("displayOrder", String(displayOrder));
 
-            // 📌 SEO / Meta
-            if (metaTitle) formData.append("metaTitle", metaTitle);
-            if (metaDescription) formData.append("metaDescription", metaDescription);
-            if (metaKeywords.length > 0) {
-                formData.append("metaKeywords", JSON.stringify(metaKeywords));
-            }
-            if (canonicalUrl) formData.append("canonicalUrl", canonicalUrl);
-            if (ogTitle) formData.append("ogTitle", ogTitle);
-            if (ogDescription) formData.append("ogDescription", ogDescription);
-            formData.append("index", JSON.stringify(index));
-            formData.append("follow", JSON.stringify(follow));
+    if (originalPrice !== "") formData.append("originalPrice", String(originalPrice));
+    if (price !== "") formData.append("price", String(price));
+    if (totalFee !== "") formData.append("totalFee", String(totalFee));
+    if (oneTimeFee !== "") formData.append("oneTimeFee", String(oneTimeFee));
+    if (firstInstallment !== "") formData.append("firstInstallment", String(firstInstallment));
+    if (secondInstallment !== "") formData.append("secondInstallment", String(secondInstallment));
+    if (thirdInstallment !== "") formData.append("thirdInstallment", String(thirdInstallment));
+    if (fourthInstallment !== "") formData.append("fourthInstallment", String(fourthInstallment));
 
-            const res = await fetch("/api/admin/courses", {
-                method: "POST",
-                body: formData,
-            });
+    if (imageFile) {
+      formData.append("image", imageFile);
+      if (imageAlt) formData.append("imageAlt", imageAlt);
+    }
 
-            if (!res.ok) throw new Error("Failed to create course");
+    if (demoVideo) formData.append("demoVideo", demoVideo);
+    if (videos.length > 0) {
+      formData.append("videos", JSON.stringify(videos));
+    }
 
-            toast.success("Course added successfully 🎉");
-            router.push("/admin/courses");
-        } catch (err) {
-            console.error("Error submitting course:", err);
-            toast.error("Failed to add course ❌");
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    if (metaTitle) formData.append("metaTitle", metaTitle);
+    if (metaDescription) formData.append("metaDescription", metaDescription);
+    if (metaKeywords.length > 0) {
+      formData.append("metaKeywords", JSON.stringify(metaKeywords));
+    }
+    if (canonicalUrl) formData.append("canonicalUrl", canonicalUrl);
+    if (ogTitle) formData.append("ogTitle", ogTitle);
+    if (ogDescription) formData.append("ogDescription", ogDescription);
+    formData.append("index", JSON.stringify(index));
+    formData.append("follow", JSON.stringify(follow));
+
+    // ✅ Always update (PUT)
+    const res = await fetch(`/api/admin/courses/${courseId}`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Failed to update course");
+
+    // ✅ Show success toast once, before redirect
+    toast.success("Course updated successfully");
+    router.push("/admin/courses");
+
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to update course ❌");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
 
-    // Loading UI
-    if (loading) {
+
+
+     // Loading UI
+   if (loading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-100">
                 <div className="flex flex-col items-center">
@@ -189,8 +269,7 @@ export default function AddCoursePage() {
         );
     }
 
-
-    if (submitting) {
+     if (submitting) {
         return (
             <div className="flex items-center justify-center h-screen bg-gray-100">
                 <div className="flex flex-col items-center">
@@ -199,19 +278,17 @@ export default function AddCoursePage() {
                         <div className="w-5 h-5 bg-[#f97316] rounded-full animate-bounce delay-150"></div>
                         <div className="w-5 h-5 bg-[#facc15] rounded-full animate-bounce delay-300"></div>
                     </div>
-                    <p className="text-gray-700 font-semibold text-lg">course is being created...</p>
+                    <p className="text-gray-700 font-semibold text-lg">course is being update...</p>
                 </div>
             </div>
         );
     }
     return (
         <AdminLayout>
-            <h1 className="text-3xl font-bold mb-6 text-gray-800">New courses</h1>
+            <h1 className="text-3xl font-bold mb-6 text-gray-800">Edit Course
+            </h1>
 
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-2xl shadow-xl max-w-6xl mx-auto space-y-8"
-            >
+            <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-xl">
                 {/* Basic Info */}
                 <div>
                     <h2 className="text-xl font-semibold text-gray-700 mb-4 border-b border-gray-300-b pb-2">
@@ -238,10 +315,11 @@ export default function AddCoursePage() {
                             <input
                                 type="text"
                                 value={slug}
-                                onChange={(e) => setSlug(e.target.value)}
+                                onChange={handleSlugChange}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-1 focus:ring-[#e94e4e] transition outline-none"
                                 required
-                            />
+                                />
+
                         </div>
 
                     </div>
@@ -343,8 +421,10 @@ export default function AddCoursePage() {
                             <ImageUpload
                                 onImageSelect={(file) => setImageFile(file)}
                                 isLoading={false}
+                                initialImage={imageUrl}   // 👈 pass the saved image
                             />
-                        </div>
+                            </div>
+
 
                         <div>
                             <label className="block font-medium text-gray-700 mb-1">
@@ -377,7 +457,7 @@ export default function AddCoursePage() {
                                 value={originalPrice}
                                 onChange={(e) => setOriginalPrice(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                                 focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                                         focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                                 required
                             />
                         </div>
@@ -391,7 +471,7 @@ export default function AddCoursePage() {
                                 value={price}
                                 onChange={(e) => setPrice(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                   focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                           focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                                 required
                             />
                         </div>
@@ -405,7 +485,7 @@ export default function AddCoursePage() {
                                 value={totalFee}
                                 onChange={(e) => setTotalFee(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                   focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                           focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                             />
                         </div>
 
@@ -418,7 +498,7 @@ export default function AddCoursePage() {
                                 value={oneTimeFee}
                                 onChange={(e) => setOneTimeFee(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                                 focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                                         focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                             />
                         </div>
 
@@ -431,7 +511,7 @@ export default function AddCoursePage() {
                                 value={firstInstallment}
                                 onChange={(e) => setFirstInstallment(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                                  focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                                          focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                             />
                         </div>
 
@@ -444,7 +524,7 @@ export default function AddCoursePage() {
                                 value={secondInstallment}
                                 onChange={(e) => setSecondInstallment(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                                 focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                                         focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                             />
                         </div>
 
@@ -457,7 +537,7 @@ export default function AddCoursePage() {
                                 value={thirdInstallment}
                                 onChange={(e) => setThirdInstallment(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                                 focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                                         focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                             />
                         </div>
 
@@ -470,7 +550,7 @@ export default function AddCoursePage() {
                                 value={fourthInstallment}
                                 onChange={(e) => setFourthInstallment(e.target.value)}
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 
-                                 focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
+                                         focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                             />
                         </div>
                     </div>
@@ -702,11 +782,11 @@ export default function AddCoursePage() {
                                 type="button"
                                 onClick={() => setIndex(!index)}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition
-                                        ${index ? "bg-[#00C950]" : "bg-gray-300"}`}
+                                                ${index ? "bg-[#00C950]" : "bg-gray-300"}`}
                             >
                                 <span
                                     className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition
-                                        ${index ? "translate-x-6" : "translate-x-1"}`}
+                                                ${index ? "translate-x-6" : "translate-x-1"}`}
                                 />
                             </button>
                         </div>
@@ -718,11 +798,11 @@ export default function AddCoursePage() {
                                 type="button"
                                 onClick={() => setFollow(!follow)}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition
-            ${follow ? "bg-[#00C950]" : "bg-gray-300"}`}
+                    ${follow ? "bg-[#00C950]" : "bg-gray-300"}`}
                             >
                                 <span
                                     className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition
-                ${follow ? "translate-x-6" : "translate-x-1"}`}
+                        ${follow ? "translate-x-6" : "translate-x-1"}`}
                                 />
                             </button>
                         </div>
@@ -734,11 +814,11 @@ export default function AddCoursePage() {
                                 type="button"
                                 onClick={() => setActive(!active)}
                                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition
-            ${active ? "bg-green-500" : "bg-gray-300"}`}
+                    ${active ? "bg-green-500" : "bg-gray-300"}`}
                             >
                                 <span
                                     className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition
-                ${active ? "translate-x-6" : "translate-x-1"}`}
+                        ${active ? "translate-x-6" : "translate-x-1"}`}
                                 />
                             </button>
                         </div>
@@ -763,9 +843,7 @@ export default function AddCoursePage() {
                         Save
                     </button>
                 </div>
-
             </form>
-
         </AdminLayout>
     );
 }

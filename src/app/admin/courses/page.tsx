@@ -10,7 +10,6 @@ import ConfirmDialog from "@/component/admin/ConfirmDialog";
 interface Course {
     _id: string;
     title: string;
-    category?: { _id: string; name: string; slug: string }; // optional
     active: boolean;
     lectures: number;
     duration: string;
@@ -37,8 +36,8 @@ export default function CoursePage() {
     const [filterMinPrice, setFilterMinPrice] = useState<string>("");
     const [filterMaxPrice, setFilterMaxPrice] = useState<string>("");
 
-    const [filterStatus, setFilterStatus] = useState<string>(""); // "active", "inactive", or ""
-    const [searchTitle, setSearchTitle] = useState<string>(""); // search by title
+    const [filterStatus, setFilterStatus] = useState<string>("");
+    const [searchTitle, setSearchTitle] = useState<string>("");
 
     useEffect(() => {
         const token = localStorage.getItem("adminToken");
@@ -51,7 +50,7 @@ export default function CoursePage() {
 
     const fetchCourses = async () => {
         try {
-            const res = await fetch("/api/admin/courses"); // your API endpoint
+            const res = await fetch("/api/admin/courses");
             if (!res.ok) throw new Error("Failed to fetch courses");
             const data = await res.json();
             setCourses(data);
@@ -61,19 +60,23 @@ export default function CoursePage() {
         }
     };
 
+
     const handleDelete = (id: string) => {
         setConfirmTitle("Are you sure you want to delete this course?");
         setConfirmMessage("You won't be able to revert this!");
         setConfirmBtnText("Delete");
+
         setConfirmAction(() => async () => {
             try {
                 const res = await fetch(`/api/admin/courses/${id}`, { method: "DELETE" });
                 const data = await res.json();
+
                 if (!res.ok) {
                     toast.error(data.error || "Failed to delete course");
                     return;
                 }
-                fetchCourses();
+
+                fetchCourses(); // 🔄 Refresh list after delete
                 toast.success("Course deleted successfully!");
             } catch (err) {
                 console.error(err);
@@ -82,8 +85,10 @@ export default function CoursePage() {
                 setConfirmOpen(false);
             }
         });
+
         setConfirmOpen(true);
     };
+
 
     const handleToggleActive = (id: string, currentStatus: boolean) => {
         setConfirmTitle(currentStatus ? "Deactivate this course?" : "Activate this course?");
@@ -102,11 +107,14 @@ export default function CoursePage() {
 
                 if (res.ok) {
                     const data = await res.json();
+
+                    // ✅ Use returned course object
                     setCourses((prev) =>
                         prev.map((course) =>
                             course._id === id ? { ...course, active: data.course.active } : course
                         )
                     );
+
                     toast.success(`Course has been ${!currentStatus ? "activated" : "deactivated"}`);
                 } else {
                     toast.error("Something went wrong.");
@@ -120,6 +128,7 @@ export default function CoursePage() {
 
         setConfirmOpen(true);
     };
+
 
     const filteredCourses = courses.filter((course) => {
         const matchesStatus =
@@ -167,7 +176,7 @@ export default function CoursePage() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                     <h2 className="text-xl font-semibold text-gray-700">All Courses</h2>
 
-                   
+
 
                     <button
                         onClick={() => router.push("/admin/courses/add")}
@@ -176,81 +185,84 @@ export default function CoursePage() {
                         <Plus size={14} /> New Course
                     </button>
                 </div>
-                 <div className="flex flex-wrap gap-3 items-center bg-white p-4 rounded-xl shadow-sm">
-                        {/* Status Filter */}
-                        <div className="relative">
-                            <Activity className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                            <select
-                                value={filterStatus}
-                                onChange={(e) => setFilterStatus(e.target.value)}
-                                className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
-                            >
-                                <option value="">All Status</option>
-                                <option value="true">Active</option>
-                                <option value="false">Inactive</option>
-                            </select>
-                        </div>
+                <div className="flex flex-wrap gap-3 items-center bg-white p-4 rounded-xl shadow-sm mb-3">
 
-                        {/* Course Mode Filter */}
-                        <div className="relative">
-                            <List className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                            <select
-                                value={filterMode}
-                                onChange={(e) => setFilterMode(e.target.value)}
-                                className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
-                            >
-                                <option value="">All Modes</option>
-                                <option value="online">Online</option>
-                                <option value="offline">Offline</option>
-                            </select>
-                        </div>
-
-                        {/* Language Filter */}
-                        <div className="relative">
-                            <List className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                            <select
-                                value={filterLanguage}
-                                onChange={(e) => setFilterLanguage(e.target.value)}
-                                className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
-                            >
-                                <option value="">All Languages</option>
-                                {Array.from(new Set(courses.map((c) => c.languages))).map((lang) => (
-                                    <option key={lang} value={lang}>{lang}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Price Range Filter */}
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="number"
-                                placeholder="Min Price"
-                                value={filterMinPrice}
-                                onChange={(e) => setFilterMinPrice(e.target.value)}
-                                className="w-20 pl-2 pr-1 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
-                            />
-                            <span>-</span>
-                            <input
-                                type="number"
-                                placeholder="Max Price"
-                                value={filterMaxPrice}
-                                onChange={(e) => setFilterMaxPrice(e.target.value)}
-                                className="w-20 pl-2 pr-1 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
-                            />
-                        </div>
-
-                        {/* Title Search */}
-                        <div className="relative flex-1 min-w-[200px]">
-                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-                            <input
-                                type="text"
-                                value={searchTitle}
-                                onChange={(e) => setSearchTitle(e.target.value)}
-                                placeholder="Search..."
-                                className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
-                            />
-                        </div>
+                    {/* Language Filter */}
+                    <div className="relative">
+                        <List className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                        <select
+                            value={filterLanguage}
+                            onChange={(e) => setFilterLanguage(e.target.value)}
+                            className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+                        >
+                            <option value="">All Languages</option>
+                            {Array.from(new Set(courses.map((c) => c.languages))).map((lang) => (
+                                <option key={lang} value={lang}>{lang}</option>
+                            ))}
+                        </select>
                     </div>
+
+                    {/* Course Mode Filter */}
+                    <div className="relative">
+                        <List className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                        <select
+                            value={filterMode}
+                            onChange={(e) => setFilterMode(e.target.value)}
+                            className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+                        >
+                            <option value="">All Modes</option>
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+
+                    {/* Status Filter */}
+                    <div className="relative">
+                        <Activity className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+                        >
+                            <option value="">All Status</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+
+                    {/* Price Range Filter */}
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="number"
+                            placeholder="Min Price"
+                            value={filterMinPrice}
+                            onChange={(e) => setFilterMinPrice(e.target.value)}
+                            className="w-36 pl-2 pr-1 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+                        />
+                        <span>-</span>
+                        <input
+                            type="number"
+                            placeholder="Max Price"
+                            value={filterMaxPrice}
+                            onChange={(e) => setFilterMaxPrice(e.target.value)}
+                            className="w-36 pl-2 pr-1 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+                        />
+                    </div>
+
+                    {/* Title Search */}
+                    <div className="relative flex-1 min-w-[130px]">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                        <input
+                            type="text"
+                            value={searchTitle}
+                            onChange={(e) => setSearchTitle(e.target.value)}
+                            placeholder="Search..."
+                            className="pl-7 pr-3 py-2 w-full rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
+                        />
+                    </div>
+
+
+                </div>
 
 
                 <div className="overflow-x-auto">

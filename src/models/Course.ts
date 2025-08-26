@@ -1,4 +1,3 @@
-// models/Course.ts
 import mongoose, { Document, Schema, Model } from "mongoose";
 
 export interface ICourse extends Document {
@@ -27,9 +26,10 @@ export interface ICourse extends Document {
 
   // Images
   image?: {
-    url: string;
+    url: string;        // ✅ secure_url
+    public_url: string; // ✅ plain http url
+    public_id: string;  // ✅ Cloudinary public_id
     alt: string;
-    publicId?: string;
   };
 
   // Videos
@@ -54,13 +54,13 @@ const CourseSchema: Schema = new Schema(
   {
     title: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
-    shortContent: { type: String, required: true },
+    shortContent: { type: String },
     content: { type: String, required: true },
     active: { type: Boolean, default: true },
 
     courseMode: { type: String, enum: ["online", "offline"], required: true },
-    lectures: { type: Number, required: true },
-    duration: { type: String, required: true },
+    lectures: { type: Number },
+    duration: { type: String },
     languages: { type: String, required: true },
     displayOrder: { type: Number, default: 0 },
 
@@ -75,8 +75,9 @@ const CourseSchema: Schema = new Schema(
 
     image: {
       url: { type: String },
+      public_url: { type: String },
+      public_id: { type: String },
       alt: { type: String },
-      publicId: { type: String },
     },
 
     demoVideo: { type: String },

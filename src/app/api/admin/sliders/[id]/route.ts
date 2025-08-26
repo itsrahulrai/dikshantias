@@ -21,6 +21,7 @@ export async function GET(
   }
 }
 
+
 // UPDATE slider
 export async function PUT(
   req: Request,
