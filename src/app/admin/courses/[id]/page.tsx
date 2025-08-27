@@ -421,8 +421,11 @@ const handleSubmit = async (e: React.FormEvent) => {
                             <ImageUpload
                                 onImageSelect={(file) => setImageFile(file)}
                                 isLoading={false}
-                                initialImage={imageUrl}   // 👈 pass the saved image
+                                initialImage={imageUrl}
                             />
+                               <span className="text-gray-400 text-xs mt-1 block">
+                            Recommended size: <strong>500px × 300px</strong></span>
+
                             </div>
 
 

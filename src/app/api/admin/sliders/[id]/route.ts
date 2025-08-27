@@ -135,12 +135,12 @@ export async function PATCH(
 }
 
 // DELETE slider
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request, context: { params: { id: string } }) {
   try {
-    const { id } = params;
+    // await the params before using
+    const { params } = context;
+    const id = params.id;
+
     await connectToDB();
 
     const slider = await SliderModel.findById(id);
@@ -148,7 +148,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Slider not found" }, { status: 404 });
     }
 
-    // Delete image from Cloudinary if it exists
+    // Delete image from Cloudinary if exists
     if (slider.image?.public_id) {
       await cloudinary.uploader.destroy(slider.image.public_id);
     }

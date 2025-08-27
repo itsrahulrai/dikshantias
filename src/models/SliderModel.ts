@@ -1,4 +1,3 @@
-
 import mongoose, { Document, Schema, Model } from "mongoose";
 
 export interface ISlider extends Document {
@@ -8,6 +7,7 @@ export interface ISlider extends Document {
     public_url: string;
     public_id: string;
   };
+  type: "Desktop" | "Mobile";
   displayOrder: number;
   active: boolean;
   createdAt?: Date;
@@ -22,13 +22,18 @@ const SliderSchema: Schema = new Schema(
       public_url: { type: String, required: true },
       public_id: { type: String, required: true },
     },
+    type: { 
+      type: String, 
+      enum: ["Desktop", "Mobile"],
+      default: "Desktop",
+      required: true
+    },
     displayOrder: { type: Number, default: 0 },
     active: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-// ✅ Fix for Next.js hot reload issue (avoids OverwriteModelError)
 const SliderModel: Model<ISlider> =
   mongoose.models.Slider || mongoose.model<ISlider>("Slider", SliderSchema);
 

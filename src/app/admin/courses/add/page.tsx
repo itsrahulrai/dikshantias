@@ -344,8 +344,11 @@ export default function AddCoursePage() {
                                 onImageSelect={(file) => setImageFile(file)}
                                 isLoading={false}
                             />
-                        </div>
+                            <span className="text-gray-400 text-xs mt-1 block">
+                            Recommended size: <strong>500px × 300px</strong></span>
 
+                        </div>
+                        
                         <div>
                             <label className="block font-medium text-gray-700 mb-1">
                                 Image Alt Text

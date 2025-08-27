@@ -8,6 +8,7 @@ interface Slider {
   _id?: string;
   title: string;
   displayOrder: number;
+  type?: "Desktop" | "Mobile";
   image?: { url: string };
 }
 
@@ -24,6 +25,7 @@ export default function SliderModal({
 }: SliderModalProps) {
   const [title, setTitle] = useState("");
   const [displayOrder, setDisplayOrder] = useState<number>(1);
+  const [type, setType] = useState<"Desktop" | "Mobile">("Desktop");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,10 +36,12 @@ export default function SliderModal({
       setTitle(slider.title);
       setDisplayOrder(slider.displayOrder);
       setPreviewImage(slider.image?.url || null);
+      setType(slider.type || "Desktop");
     } else {
       setTitle("");
       setDisplayOrder(1);
       setPreviewImage(null);
+      setType("Desktop");
     }
   }, [slider]);
 
@@ -58,6 +62,7 @@ export default function SliderModal({
     const formData = new FormData();
     formData.append("title", title);
     formData.append("displayOrder", displayOrder.toString());
+    formData.append("type", type);
     if (file) formData.append("image", file);
 
     try {
@@ -108,6 +113,39 @@ export default function SliderModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 py-6">
+
+          {/* Slider Type */}
+          <label className="flex flex-col text-gray-700">
+            <span className="mb-2 font-medium">Slider Type</span>
+            <div className="relative">
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as "Desktop" | "Mobile")}
+                className="appearance-none w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-[#e94e4e] transition cursor-pointer"
+                disabled={isLoading}
+              >
+                <option value="Desktop">Desktop</option>
+                <option value="Mobile">Mobile</option>
+              </select>
+              {/* Custom dropdown arrow */}
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg
+                  className="h-5 w-5 text-gray-400"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 12a1 1 0 01-.707-.293l-3-3a1 1 0 111.414-1.414L10 9.586l2.293-2.293a1 1 0 111.414 1.414l-3 3A1 1 0 0110 12z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            </div>
+          </label>
+
+          {/* Title */}
           <label className="flex flex-col text-gray-700 text-medium">
             Title
             <input
@@ -122,6 +160,7 @@ export default function SliderModal({
             />
           </label>
 
+          {/* Display Order */}
           <label className="flex flex-col text-gray-700 text-medium">
             Display Order
             <input
@@ -136,6 +175,9 @@ export default function SliderModal({
             />
           </label>
 
+
+
+          {/* Image Upload */}
           <label className="flex flex-col text-gray-700 text-medium">
             Upload Image
             <div className="mt-2 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-purple-400 transition relative">
@@ -162,7 +204,6 @@ export default function SliderModal({
                 disabled={isLoading}
               />
             </div>
-            {/* Note about image size */}
             <span className="text-gray-400 text-xs mt-1">
               Recommended size: 1920px width × 600px height
             </span>
@@ -170,24 +211,20 @@ export default function SliderModal({
 
           {/* Actions */}
           <div className="flex justify-end gap-3 mt-4">
-            {/* Cancel Button */}
             <button
               type="button"
               onClick={handleClose}
-              className={`flex items-center gap-2 px-5 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition ${
-                isLoading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`flex items-center gap-2 px-5 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition ${isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               disabled={isLoading}
             >
               Cancel
             </button>
 
-            {/* Save/Update Button */}
             <button
               type="submit"
-              className={`flex items-center gap-2 px-5 py-2 bg-[#e94e4e] text-white rounded-lg shadow-md hover:bg-red-600 transition ${
-                isLoading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`flex items-center gap-2 px-5 py-2 bg-[#e94e4e] text-white rounded-lg shadow-md hover:bg-red-600 transition ${isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               disabled={isLoading}
             >
               <CheckCircle size={18} className="text-white" />

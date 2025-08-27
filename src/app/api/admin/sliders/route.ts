@@ -26,6 +26,10 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const title = formData.get("title") as string;
     const displayOrder = parseInt(formData.get("displayOrder") as string);
+
+    // Read type from formData
+    const type = (formData.get("type") as "Desktop" | "Mobile") || "Desktop";
+
     const imageFile = formData.get("image") as any;
 
     if (!imageFile) {
@@ -47,14 +51,15 @@ export async function POST(req: Request) {
       uploadStream.end(buffer);
     });
 
-    // Save slider in MongoDB, including public_id
+    // Include type in MongoDB document
     const newSlider = await SliderModel.create({
       title,
       displayOrder,
+      type, // <-- make sure this is included
       image: {
         url: uploadedImage.secure_url,
-        public_url: uploadedImage.secure_url, // for frontend display
-        public_id: uploadedImage.public_id,    // needed for deletion
+        public_url: uploadedImage.secure_url,
+        public_id: uploadedImage.public_id,
       },
       active: true,
     });
@@ -65,3 +70,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message || "Failed to create slider" }, { status: 500 });
   }
 }
+

@@ -56,9 +56,9 @@ export default function ImageUpload({
           disabled={isLoading}
         />
       </div>
-      <span className="text-gray-400 text-xs mt-1">
-        Recommended size: <strong>1920px × 600px</strong>
-      </span>
-    </label>
+        {/* <span className="text-gray-400 text-xs mt-1">
+          Recommended size: <strong>1920px × 600px</strong>
+        </span> */}
+    </label>  
   );
 }
