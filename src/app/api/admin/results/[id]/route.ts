@@ -128,7 +128,7 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
     await connectToDB();
     const result = await ResultModel.findById(id);
     if (!result) {
-      return NextResponse.json({ error: "Slider not found" }, { status: 404 });
+      return NextResponse.json({ error: "Result not found" }, { status: 404 });
     }
     if (result.image?.public_id) {
       await cloudinary.uploader.destroy(result.image.public_id);
