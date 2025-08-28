@@ -7,8 +7,8 @@ import SubCategoryModel from "@/models/SubCategoryModel";
 export async function GET() {
   try {
     await connectToDB();
-   const subcategories = await SubCategoryModel.find({})
-      .populate("category", "name slug"); 
+    const subcategories = await SubCategoryModel.find({})
+      .populate("category", "name slug"); // now populate works
     return NextResponse.json(subcategories, { status: 200 });
   } catch (error) {
     console.error("Error fetching subcategories:", error);

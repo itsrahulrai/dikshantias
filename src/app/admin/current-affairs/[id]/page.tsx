@@ -77,8 +77,8 @@ export default function AddCurrentAffairsPage() {
           setSlug(data.slug);
           setShortContent(data.shortContent);
           setContent(data.content);
-          setCategory(data.category._id);
-          setSubCategory(data.subCategory?._id || "");
+          setCategory(data.category.$oid ? data.category.$oid : data.category._id?.toString());
+          setSubCategory(data.subCategory?.$oid ? data.subCategory.$oid : data.subCategory?._id?.toString() || "");
           setActive(data.active);
           setImageAlt(data.imageAlt || "");
           setImageFile(null); // no new file yet
@@ -93,10 +93,11 @@ export default function AddCurrentAffairsPage() {
     fetchData();
   }, [editId]);
 
-  // Filter subcategories based on selected category
-  const filteredSubCategories = subCategories.filter(
-    (sub) => sub.category._id === category
-  );
+     // Filter subcategories based on selected category
+    const filteredSubCategories = subCategories.filter(
+      (sub) => sub.category?._id?.toString() === category
+          || sub.category?.$oid === category
+    );
 
   // Submit
   const handleSubmit = async (e: React.FormEvent) => {
@@ -119,10 +120,16 @@ export default function AddCurrentAffairsPage() {
       if (imageFile) formData.append("image", imageFile);
       if (imageAlt) formData.append("imageAlt", imageAlt);
 
-      const res = await fetch("/api/admin/current-affairs", {
-        method: currentAffairId ? "PUT" : "POST",
-        body: formData,
-      });
+    const res = await fetch(
+        currentAffairId
+          ? `/api/admin/current-affairs/${currentAffairId}`
+          : "/api/admin/current-affairs",                   
+        {
+          method: currentAffairId ? "PUT" : "POST",
+          body: formData,
+        }
+      );
+
 
       if (!res.ok) throw new Error("Failed to save current affair");
 

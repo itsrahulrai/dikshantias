@@ -2,19 +2,28 @@ import { NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary"; 
 import { connectToDB } from "@/lib/mongodb";
 import CurrentAffairs from "@/models/CurrentAffair";
+import BlogCategoryModel from "@/models/BlogCategoryModel";
+import SubCategoryModel from "@/models/SubCategoryModel";
 
 
-// GET all sliders
+
+
+// GET all Current Affairs
 export async function GET() {
   try {
     await connectToDB();
+
     const currentAffairs = await CurrentAffairs.find()
-      .populate("category", "name")
-      .populate("subCategory", "name");
+      .populate({ path: "category", model: BlogCategoryModel })
+      .populate({ path: "subCategory", model: SubCategoryModel });
+
     return NextResponse.json(currentAffairs);
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to fetch current affairs" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch current affairs" },
+      { status: 500 }
+    );
   }
 }
 
