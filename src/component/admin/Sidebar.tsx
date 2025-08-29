@@ -44,7 +44,7 @@
       // Categories dropdown
     
       { href: "/admin/slider", label: "Slider", icon: BookOpen },
-      { href: "/admin/testimonial", label: "Testimonial", icon: Users },
+      { href: "/admin/testimonials", label: "Testimonials", icon: Users },
       { href: "/admin/results", label: "Result", icon: FileText },
       { href: "/admin/gallery", label: "Gallery", icon: MessageSquare },
       { href: "/admin/settings", label: "Settings", icon: Settings },

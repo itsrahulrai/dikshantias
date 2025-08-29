@@ -101,7 +101,7 @@ const Testimonials = () => {
                         <div className="absolute top-4 right-4 md:top-6 md:right-6 opacity-10 z-10">
                             <Quote className="w-16 h-16 md:w-24 md:h-24 text-yellow-400" />
                         </div>
-                        {/* Testimonials Container with Sliding Effect */}
+                        {/*      Container with Sliding Effect */}
                         <div className="relative w-full overflow-hidden">
                             <div
                                 className="flex transition-transform duration-500 ease-in-out"
