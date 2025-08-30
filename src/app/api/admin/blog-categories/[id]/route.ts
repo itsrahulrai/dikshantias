@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/dbConnect";
-import BlogCategoryModel from "@/models/BlogCategory";
+import { connectToDB } from "@/lib/mongodb";
+import BlogCategoryModel from "@/models/BlogCategoryModel";
+
 
 // ✅ GET single blog category by ID
 export async function GET(
@@ -8,7 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
+    await connectToDB();
 
     const category = await BlogCategoryModel.findById(params.id);
     if (!category) {
@@ -33,7 +34,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
+    await connectToDB();
     const body = await req.json();
 
     const updatedCategory = await BlogCategoryModel.findByIdAndUpdate(
@@ -64,7 +65,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await dbConnect();
+    await connectToDB();
 
     const deletedCategory = await BlogCategoryModel.findByIdAndDelete(params.id);
 
@@ -86,6 +87,4 @@ export async function DELETE(
     return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
   }
 }
-
-
 
