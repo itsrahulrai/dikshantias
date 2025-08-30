@@ -13,14 +13,23 @@ type RouteContext = {
 // GET single category by ID
 export async function GET(req: NextRequest, context: RouteContext) {
   try {
-    await connectToDB();
+      await connectToDB();
     const { id } = context.params;
     const category = await BlogCategoryModel.findById(id);
-    return NextResponse.json({ id });
+
+    return NextResponse.json(category);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch category" }, { status: 500 });
   }
 }
+
+
+
+
+
+
+
+
 
 // Update category
 export async function PUT(
