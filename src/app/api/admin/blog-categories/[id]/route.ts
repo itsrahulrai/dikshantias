@@ -1,25 +1,24 @@
-import { connectToDB } from "@/lib/mongodb";
-import BlogCategoryModel from "@/models/BlogCategoryModel";
 import { NextResponse } from "next/server";
+import dbConnect from "@/lib/dbConnect";
+import BlogCategoryModel from "@/models/BlogCategory";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-// GET single category by ID
-export async function GET(req: Request, { params }: RouteParams) {
+// ✅ GET single blog category by ID
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    await connectToDB();
-    const { id } = params;
-    const category = await BlogCategoryModel.findById(id);
+    await dbConnect();
 
+    const category = await BlogCategoryModel.findById(params.id);
     if (!category) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(category);
+    return NextResponse.json(category, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -28,24 +27,29 @@ export async function GET(req: Request, { params }: RouteParams) {
   }
 }
 
-// UPDATE category
-export async function PUT(req: Request, { params }: RouteParams) {
+// ✅ UPDATE blog category
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    await connectToDB();
-    const { id } = params;
-    const { name, slug, active } = await req.json();
+    await dbConnect();
+    const body = await req.json();
 
-    const updated = await BlogCategoryModel.findByIdAndUpdate(
-      id,
-      { name, slug, active },
+    const updatedCategory = await BlogCategoryModel.findByIdAndUpdate(
+      params.id,
+      body,
       { new: true }
     );
 
-    if (!updated) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    if (!updatedCategory) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(updated);
+    return NextResponse.json(updatedCategory, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -54,18 +58,27 @@ export async function PUT(req: Request, { params }: RouteParams) {
   }
 }
 
-// DELETE category
-export async function DELETE(req: Request, { params }: RouteParams) {
+// ✅ DELETE blog category
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    await connectToDB();
-    const { id } = params;
+    await dbConnect();
 
-    const deleted = await BlogCategoryModel.findByIdAndDelete(id);
-    if (!deleted) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(params.id);
+
+    if (!deletedCategory) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ message: "Category deleted successfully" });
+    return NextResponse.json(
+      { message: "Category deleted successfully" },
+      { status: 200 }
+    );
   } catch (error: unknown) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -73,3 +86,6 @@ export async function DELETE(req: Request, { params }: RouteParams) {
     return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
   }
 }
+
+
+
