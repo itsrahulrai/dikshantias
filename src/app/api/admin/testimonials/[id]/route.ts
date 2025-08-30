@@ -142,21 +142,21 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
 
     await connectToDB();
 
-    const slider = await SliderModel.findById(id);
-    if (!slider) {
-      return NextResponse.json({ error: "Slider not found" }, { status: 404 });
+    const Testimonial = await TestimonialModel.findById(id);
+    if (!Testimonial) {
+      return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
 
     // Delete image from Cloudinary if exists
-    if (slider.image?.public_id) {
-      await cloudinary.uploader.destroy(slider.image.public_id);
+    if (Testimonial.image?.public_id) {
+      await cloudinary.uploader.destroy(Testimonial.image.public_id);
     }
 
-    await SliderModel.findByIdAndDelete(id);
+    await TestimonialModel.findByIdAndDelete(id);
 
-    return NextResponse.json({ message: "Slider deleted successfully" });
+    return NextResponse.json({ message: "Testimonial deleted successfully" });
   } catch (error: any) {
-    console.error("Failed to delete slider:", error);
+    console.error("Failed to delete Testimonial:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

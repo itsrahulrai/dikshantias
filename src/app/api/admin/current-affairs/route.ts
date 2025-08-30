@@ -27,9 +27,9 @@ export async function GET() {
   }
 }
 
-
 // Utility: Upload to Cloudinary
 async function uploadToCloudinary(file: Blob) {
+  if (!file) return null; // <-- handle null case
   const buffer = Buffer.from(await file.arrayBuffer());
   return new Promise<any>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -60,15 +60,8 @@ export async function POST(req: Request) {
     const imageAlt = formData.get("imageAlt")?.toString() || "";
     const active = formData.get("active") === "true";
 
-    if (!title || !slug || !categoryId || !imageFile) {
-      return NextResponse.json(
-        { error: "Title, slug, category, and image are required" },
-        { status: 400 }
-      );
-    }
-
-    // Upload image
-    const uploadedImage = await uploadToCloudinary(imageFile);
+    // Upload image only if provided
+    const uploadedImage = imageFile ? await uploadToCloudinary(imageFile) : null;
 
     const newAffair = await CurrentAffairs.create({
       title,
@@ -77,11 +70,13 @@ export async function POST(req: Request) {
       content,
       category: categoryId,
       subCategory: subCategoryId || undefined,
-      image: {
-        url: uploadedImage.secure_url,
-        public_id: uploadedImage.public_id,
-        public_url: uploadedImage.secure_url,
-      },
+      image: uploadedImage
+        ? {
+            url: uploadedImage.secure_url,
+            public_id: uploadedImage.public_id,
+            public_url: uploadedImage.secure_url,
+          }
+        : undefined, // <-- no image if not uploaded
       imageAlt,
       active,
     });

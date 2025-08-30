@@ -135,8 +135,15 @@ export default function TestimonialsPage() {
 
   if (!authorized || !mounted)
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <p className="text-gray-700 font-semibold text-lg">Loading...</p>
+     <div className="flex items-center justify-center h-screen bg-gray-100">
+        <div className="flex flex-col items-center">
+          <div className="relative flex space-x-3 mb-4">
+            <div className="w-5 h-5 bg-[#e94e4e] rounded-full animate-bounce"></div>
+            <div className="w-5 h-5 bg-[#f97316] rounded-full animate-bounce delay-150"></div>
+            <div className="w-5 h-5 bg-[#facc15] rounded-full animate-bounce delay-300"></div>
+          </div>
+          <p className="text-gray-700 font-semibold text-lg">Loading...</p>
+        </div>
       </div>
     );
 

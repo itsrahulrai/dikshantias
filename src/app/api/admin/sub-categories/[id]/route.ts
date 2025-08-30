@@ -124,11 +124,13 @@ export async function PATCH(
 
 // DELETE subcategory
 export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+  req: Request,
+  context: { params: { id: string } }
 ) {
   try {
+    const { params } = await context; // <-- await context
     await connectToDB();
+
     const deleted = await SubCategoryModel.findByIdAndDelete(params.id);
 
     return deleted

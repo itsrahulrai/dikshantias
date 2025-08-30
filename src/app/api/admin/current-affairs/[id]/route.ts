@@ -4,20 +4,55 @@ import CurrentAffairs from "@/models/CurrentAffair";
 import cloudinary from "@/lib/cloudinary";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 import SubCategoryModel from "@/models/SubCategoryModel";
+import mongoose from "mongoose";
+
 
 // Get single current affair
-export async function GET(
-  req: Request,
-  context: { params: { id: string } }
-) {
+// export async function GET(
+//   req: Request,
+//   context: { params: { id: string } }
+// ) {
+//   try {
+//     const { params } = context;
+//     const { id } = await params;
+//     await connectToDB();
+
+//     const currentAffair = await CurrentAffairs.findById(id)
+//       .populate({ path: "category", model: BlogCategoryModel })
+//       .populate({ path: "subCategory", model: SubCategoryModel });
+
+//     if (!currentAffair) {
+//       return NextResponse.json({ error: "Current Affairs not found" }, { status: 404 });
+//     }
+
+//     return NextResponse.json(currentAffair);
+//   } catch (error: any) {
+//     return NextResponse.json({ error: error.message }, { status: 500 });
+//   }
+// }
+
+
+
+// GET Current Affair by ID or Slug
+export async function GET(req: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
+
   try {
-    const { params } = context;
-    const { id } = await params;
     await connectToDB();
 
-    const currentAffair = await CurrentAffairs.findById(id)
-      .populate({ path: "category", model: BlogCategoryModel })
-      .populate({ path: "subCategory", model: SubCategoryModel });
+    let currentAffair;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      // If valid ObjectId, fetch by _id
+      currentAffair = await CurrentAffairs.findById(id)
+        .populate({ path: "category", model: BlogCategoryModel })
+        .populate({ path: "subCategory", model: SubCategoryModel });
+    } else {
+      // Otherwise, fetch by slug
+      currentAffair = await CurrentAffairs.findOne({ slug: id, active: true })
+        .populate({ path: "category", model: BlogCategoryModel })
+        .populate({ path: "subCategory", model: SubCategoryModel });
+    }
 
     if (!currentAffair) {
       return NextResponse.json({ error: "Current Affairs not found" }, { status: 404 });
@@ -25,9 +60,14 @@ export async function GET(
 
     return NextResponse.json(currentAffair);
   } catch (error: any) {
+    console.error("GET Current Affair Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+
+
+
 // Utility: Upload to Cloudinary
 async function uploadToCloudinary(file: Blob) {
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -122,5 +162,28 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 
+// DELETE CurrentAffairs
+
+export async function DELETE(req: Request, context: { params: { id: string } }) {
+  try {
+    const { params } = context;
+    const id = params.id;
+    await connectToDB();
+
+    const currentAffair = await CurrentAffairs.findById(id);
+    if (!currentAffair) {
+      return NextResponse.json({ error: "Current Affairs not found" }, { status: 404 });
+    }
+    if (currentAffair.image?.public_id) {
+      await cloudinary.uploader.destroy(currentAffair.image.public_id);
+    }
+    await CurrentAffairs.findByIdAndDelete(id);
+
+    return NextResponse.json({ message: "Current Affairs deleted successfully" });
+  } catch (error: any) {
+    console.error("Failed to delete Current Affairs:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
 
 
