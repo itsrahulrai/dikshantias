@@ -10,7 +10,12 @@ export async function GET(
   try {
     await connectToDB();
     const category = await BlogCategoryModel.findById(params.id);
-    return NextResponse.json(category);
+
+    if (!category) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(category, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch category" },
@@ -19,15 +24,15 @@ export async function GET(
   }
 }
 
-
 // Update category
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectToDB();
 
-    // Await params to resolve the Promise
-    const { id } = await params;
-
+    const { id } = params; // ❌ remove `await`
     const { name, slug, active } = await req.json();
 
     const updated = await BlogCategoryModel.findByIdAndUpdate(
@@ -36,7 +41,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       { new: true }
     );
 
-    return NextResponse.json(updated);
+    if (!updated) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -46,18 +55,22 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-
 // DELETE category
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     await connectToDB();
-    const { id } = await params;
-    await BlogCategoryModel.findByIdAndDelete(id);
+    const { id } = params; // ❌ remove `await`
 
-    return NextResponse.json({ message: "Category deleted" });
+    const deleted = await BlogCategoryModel.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Category deleted" }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
