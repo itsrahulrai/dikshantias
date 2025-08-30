@@ -2,21 +2,18 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
-
 // ✅ GET single blog category by ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     await connectToDB();
 
-    const category = await BlogCategoryModel.findById(params.id);
+    const category = await BlogCategoryModel.findById(id);
     if (!category) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
     return NextResponse.json(category, { status: 200 });
@@ -31,23 +28,21 @@ export async function GET(
 // ✅ UPDATE blog category
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     await connectToDB();
     const body = await req.json();
 
     const updatedCategory = await BlogCategoryModel.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true }
     );
 
     if (!updatedCategory) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
     return NextResponse.json(updatedCategory, { status: 200 });
@@ -62,24 +57,19 @@ export async function PUT(
 // ✅ DELETE blog category
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
     await connectToDB();
 
-    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(params.id);
+    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(id);
 
     if (!deletedCategory) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
-    return NextResponse.json(
-      { message: "Category deleted successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Category deleted successfully" }, { status: 200 });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -87,4 +77,3 @@ export async function DELETE(
     return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
   }
 }
-
