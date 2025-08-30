@@ -2,8 +2,14 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
+interface Context {
+  params: {
+    id: string;
+  };
+}
+
 // GET single category by ID
-export async function GET(req: Request, context: { params: any }) {
+export async function GET(req: Request, context: Context) {
   try {
     await connectToDB();
     const { id } = context.params;
@@ -14,7 +20,8 @@ export async function GET(req: Request, context: { params: any }) {
     }
 
     return NextResponse.json(category, { status: 200 });
-  } catch (error) {
+  } catch (err: unknown) {
+    console.error("GET /blog-categories/[id] error:", err);
     return NextResponse.json(
       { error: "Failed to fetch category" },
       { status: 500 }
@@ -23,7 +30,7 @@ export async function GET(req: Request, context: { params: any }) {
 }
 
 // Update category
-export async function PUT(req: Request, context: { params: any }) {
+export async function PUT(req: Request, context: Context) {
   try {
     await connectToDB();
     const { id } = context.params;
@@ -40,7 +47,8 @@ export async function PUT(req: Request, context: { params: any }) {
     }
 
     return NextResponse.json(updated, { status: 200 });
-  } catch (error) {
+  } catch (err: unknown) {
+    console.error("PUT /blog-categories/[id] error:", err);
     return NextResponse.json(
       { error: "Failed to update category" },
       { status: 500 }
@@ -49,7 +57,7 @@ export async function PUT(req: Request, context: { params: any }) {
 }
 
 // DELETE category
-export async function DELETE(req: Request, context: { params: any }) {
+export async function DELETE(req: Request, context: Context) {
   try {
     await connectToDB();
     const { id } = context.params;
@@ -60,7 +68,8 @@ export async function DELETE(req: Request, context: { params: any }) {
     }
 
     return NextResponse.json({ message: "Category deleted" }, { status: 200 });
-  } catch (error) {
+  } catch (err: unknown) {
+    console.error("DELETE /blog-categories/[id] error:", err);
     return NextResponse.json(
       { error: "Failed to delete category" },
       { status: 500 }
