@@ -2,11 +2,15 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
+// 👇 custom type for context.params
+interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+
 // GET single category by ID
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, { params }: RouteContext) {
   try {
     await connectToDB();
     const category = await BlogCategoryModel.findById(params.id);
@@ -25,14 +29,11 @@ export async function GET(
 }
 
 // Update category
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: Request, { params }: RouteContext) {
   try {
     await connectToDB();
+    const { id } = params;
 
-    const { id } = params; // ❌ remove `await`
     const { name, slug, active } = await req.json();
 
     const updated = await BlogCategoryModel.findByIdAndUpdate(
@@ -56,13 +57,10 @@ export async function PUT(
 }
 
 // DELETE category
-export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: Request, { params }: RouteContext) {
   try {
     await connectToDB();
-    const { id } = params; // ❌ remove `await`
+    const { id } = params;
 
     const deleted = await BlogCategoryModel.findByIdAndDelete(id);
 
