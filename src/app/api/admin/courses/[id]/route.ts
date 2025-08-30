@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: "course not found" }, { status: 404 });
     }
     return NextResponse.json(course);
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -29,7 +29,7 @@ export async function GET(
 async function uploadImageToCloudinary(file: File) {
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  return new Promise<any>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       { folder: "courses" },
       (error, result) => {
@@ -231,7 +231,7 @@ export async function PATCH(
 
     // ✅ Return updated course
     return NextResponse.json({ course });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update active status:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

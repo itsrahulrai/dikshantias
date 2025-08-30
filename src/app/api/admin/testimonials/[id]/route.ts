@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
     return NextResponse.json(Testimonial);
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -49,7 +49,7 @@ export async function PUT(
     }
 
     let updatedImage = existing.image;
-    const imageFile = formData.get("image") as any;
+    const imageFile = formData.get("image");
 
     if (imageFile && typeof imageFile === "object") {
       const buffer = Buffer.from(await imageFile.arrayBuffer());
@@ -58,7 +58,7 @@ export async function PUT(
         await cloudinary.uploader.destroy(existing.image.public_id);
       }
 
-      const uploadResult: any = await new Promise((resolve, reject) => {
+      const uploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "Testimonials" },
           (error, result) => {
@@ -93,7 +93,7 @@ export async function PUT(
     );
 
     return NextResponse.json(updatedTestimonial, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error updating Testimonial:", err);
     return NextResponse.json(
       { error: err.message || "Failed to update Testimonial" },
@@ -127,7 +127,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(Testimonial);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update active status:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -155,7 +155,7 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
     await TestimonialModel.findByIdAndDelete(id);
 
     return NextResponse.json({ message: "Testimonial deleted successfully" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to delete Testimonial:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

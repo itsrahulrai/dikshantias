@@ -20,7 +20,7 @@ export async function GET(
     }
 
     return NextResponse.json(blog, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching blog by ID:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -37,7 +37,7 @@ export async function PUT(
 
     const formData = await req.formData();
 
-    const updateData: any = {
+    const updateData = {
       title: formData.get("title"),
       slug: formData.get("slug"),
       shortContent: formData.get("shortContent"),
@@ -85,7 +85,7 @@ export async function PUT(
         stream.end(buffer);
       });
 
-      const uploaded = uploadRes as any;
+      const uploaded = uploadRes;
 
       updateData.image = {
         url: uploaded.secure_url,
@@ -103,7 +103,7 @@ export async function PUT(
       { message: "Blog updated successfully", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating blog:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -136,7 +136,7 @@ export async function PATCH(
       { message: "Blog status updated", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error toggling blog status:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -168,7 +168,7 @@ export async function DELETE(
       { message: "Blog deleted successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting blog:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "Slider not found" }, { status: 404 });
     }
     return NextResponse.json(slider);
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -54,7 +54,7 @@ export async function PUT(
       const formData = await req.formData();
       const title = formData.get("title") as string;
       const displayOrder = parseInt(formData.get("displayOrder") as string);
-      const imageFile = formData.get("image") as any;
+      const imageFile = formData.get("image");
 
       let updatedImage = slider.image;
 
@@ -70,7 +70,7 @@ export async function PUT(
 
         // upload new
         const buffer = Buffer.from(await imageFile.arrayBuffer());
-        const uploadedImage: any = await new Promise((resolve, reject) => {
+        const uploadedImage = await new Promise((resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream(
             { folder: "sliders" },
             (error, result) => {
@@ -100,7 +100,7 @@ export async function PUT(
       { error: "Unsupported Content-Type" },
       { status: 400 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update slider:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -128,7 +128,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(slider);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update active status:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -156,7 +156,7 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
     await SliderModel.findByIdAndDelete(id);
 
     return NextResponse.json({ message: "Slider deleted successfully" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to delete slider:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

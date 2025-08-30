@@ -15,7 +15,7 @@ export async function PUT(
     await connectToDB();
 
     const formData = await req.formData();
-    const data: any = {};
+    const data = {};
 
     // Append all fields from formData
     const fields = [
@@ -39,10 +39,10 @@ export async function PUT(
     });
 
     // Handle image if uploaded
-    const imageFile = formData.get("image") as any;
+    const imageFile = formData.get("image");
     if (imageFile && typeof imageFile === "object") {
       const buffer = Buffer.from(await imageFile.arrayBuffer());
-      const uploadedImage: any = await new Promise((resolve, reject) => {
+      const uploadedImage = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "web" },
           (error, result) => {
@@ -69,7 +69,7 @@ export async function PUT(
     }
 
     return NextResponse.json(updatedWeb, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error updating WebSettings:", err);
     return NextResponse.json(
       { error: err.message || "Failed to update web settings" },

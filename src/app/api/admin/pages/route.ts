@@ -39,12 +39,12 @@ export async function POST(req: Request) {
     const follow = formData.get("follow") !== "false";
 
     let imageData = null;
-    const imageFile = formData.get("image") as any;
+    const imageFile = formData.get("image");
 
     if (imageFile && typeof imageFile === "object") {
       const buffer = Buffer.from(await imageFile.arrayBuffer());
 
-      const uploadedImage: any = await new Promise((resolve, reject) => {
+      const uploadedImage = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "pages" },
           (error, result) => {
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(newPage, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error creating page:", err);
     return NextResponse.json(
       { error: err.message || "Failed to create page" },

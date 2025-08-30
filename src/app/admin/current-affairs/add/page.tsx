@@ -19,8 +19,8 @@ export default function AddCurrentAffairsPage() {
   const [active, setActive] = useState(true);
 
   // 📌 Category & Sub Category
-  const [categories, setCategories] = useState<any[]>([]);
-  const [subCategories, setSubCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
 

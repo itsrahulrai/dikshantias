@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const alt = formData.get("alt") as string;
    
 
-    const imageFile = formData.get("image") as any;
+    const imageFile = formData.get("image");
 
     if (!imageFile) {
       return NextResponse.json({ error: "Image is required" }, { status: 400 });
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await imageFile.arrayBuffer());
 
     // Upload to Cloudinary
-    const uploadedImage: any = await new Promise((resolve, reject) => {
+    const uploadedImage = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: "sliders" },
         (error, result) => {
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(newGallery, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error creating gallery:", err);
     return NextResponse.json({ error: err.message || "Failed to create gallery" }, { status: 500 });
   }

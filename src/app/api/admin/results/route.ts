@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(await imageFile.arrayBuffer());
 
     // Upload to Cloudinary
-    const uploadedImage: any = await new Promise((resolve, reject) => {
+    const uploadedImage = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: "results" },
         (error, result) => {
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(newResult, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error creating Result:", err);
     return NextResponse.json(
       { error: err.message || "Failed to create Result" },

@@ -31,7 +31,7 @@ export async function GET() {
 async function uploadToCloudinary(file: Blob) {
   if (!file) return null; // <-- handle null case
   const buffer = Buffer.from(await file.arrayBuffer());
-  return new Promise<any>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       { folder: "current_affairs" },
       (err, result) => {
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     ]);
 
     return NextResponse.json(populatedAffair, { status: 201 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error creating current affair:", err);
     return NextResponse.json(
       { error: err.message || "Failed to create current affair" },

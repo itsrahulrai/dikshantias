@@ -27,7 +27,7 @@ const ReadInHindu: React.FC = () => {
         const data = await res.json();
 
         // Map data to Card format
-        const formattedCards: Card[] = data.map((item: any, index: number) => ({
+        const formattedCards: Card[] = data.map((item, index: number) => ({
           _id: item._id,
           title: item.title,
           slug: item.slug,

@@ -22,7 +22,7 @@ export async function GET() {
 async function uploadImageToCloudinary(file: File) {
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  return new Promise<any>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       { folder: "courses" },
       (error, result) => {

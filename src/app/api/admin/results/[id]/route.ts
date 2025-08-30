@@ -16,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "result not found" }, { status: 404 });
     }
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -57,7 +57,7 @@ export async function PUT(req: Request) {
       const buffer = Buffer.from(await imageFile.arrayBuffer());
 
       // Upload to Cloudinary
-      const uploadedImage: any = await new Promise((resolve, reject) => {
+      const uploadedImage = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "results" },
           (error, result) => {
@@ -83,7 +83,7 @@ export async function PUT(req: Request) {
     );
 
     return NextResponse.json(updatedResult, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error updating Result:", err);
     return NextResponse.json(
       { error: err.message || "Failed to update Result" },
@@ -113,7 +113,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update active Result:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -135,7 +135,7 @@ export async function DELETE(req: Request, context: { params: { id: string } }) 
     }
     await ResultModel.findByIdAndDelete(id);
     return NextResponse.json({ message: "Result deleted successfully" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to delete result:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

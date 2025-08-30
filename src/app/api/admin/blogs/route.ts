@@ -10,7 +10,7 @@ export async function GET() {
 
     const blogs = await BlogsModel.find().populate("category").lean();
     return NextResponse.json(blogs, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching blogs:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         stream.end(buffer);
       });
 
-      const uploaded = uploadRes as any;
+      const uploaded = uploadRes;
 
       imageData = {
         url: uploaded.secure_url, // main image URL
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     await newBlog.save();
 
     return NextResponse.json({ message: "Blog created successfully" }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating blog:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

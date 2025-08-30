@@ -10,7 +10,7 @@ export default function RichTextEditor({
   value: string;
   onChange: (content: string) => void;
 }) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef(null);
 
   return (
     <div className="w-full">
