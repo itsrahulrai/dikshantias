@@ -2,42 +2,69 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
-// src/app/api/admin/blog-categories/[id]/route.ts
-
+// GET single category by ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const { id } = params;
+  try {
+    await connectToDB();
+    const { id } = context.params;
+    const category = await BlogCategoryModel.findById(id);
 
-  // Example response
-  return new Response(
-    JSON.stringify({ message: `Category fetched successfully`, id }),
-    { status: 200 }
-  );
+    return NextResponse.json(category);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch category" },
+      { status: 500 }
+    );
+  }
 }
 
+// Update category
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const { id } = params;
-  const body = await req.json();
+  try {
+    await connectToDB();
 
-  return new Response(
-    JSON.stringify({ message: `Category ${id} updated`, data: body }),
-    { status: 200 }
-  );
+    const { id } = context.params;
+    const { name, slug, active } = await req.json();
+
+    const updated = await BlogCategoryModel.findByIdAndUpdate(
+      id,
+      { name, slug, active },
+      { new: true }
+    );
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to update category" },
+      { status: 500 }
+    );
+  }
 }
 
+// DELETE category
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const { id } = params;
+  try {
+    await connectToDB();
 
-  return new Response(
-    JSON.stringify({ message: `Category ${id} deleted` }),
-    { status: 200 }
-  );
+    const { id } = context.params;
+    await BlogCategoryModel.findByIdAndDelete(id);
+
+    return NextResponse.json({ message: "Category deleted" });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { error: "Failed to delete category" },
+      { status: 500 }
+    );
+  }
 }
