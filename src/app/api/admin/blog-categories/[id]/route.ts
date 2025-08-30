@@ -20,8 +20,11 @@ export async function GET(req: Request, { params }: RouteParams) {
     }
 
     return NextResponse.json(category);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch category" }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Failed to fetch category" }, { status: 500 });
   }
 }
 
@@ -43,9 +46,11 @@ export async function PUT(req: Request, { params }: RouteParams) {
     }
 
     return NextResponse.json(updated);
-  } catch (error: any) {
-    console.error(error);
-    return NextResponse.json({ error: error.message || "Failed to update category" }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
   }
 }
 
@@ -61,8 +66,10 @@ export async function DELETE(req: Request, { params }: RouteParams) {
     }
 
     return NextResponse.json({ message: "Category deleted successfully" });
-  } catch (error: any) {
-    console.error(error);
-    return NextResponse.json({ error: error.message || "Failed to delete category" }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
   }
 }
