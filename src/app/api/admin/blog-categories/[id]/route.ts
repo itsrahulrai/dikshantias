@@ -1,23 +1,24 @@
-import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
+import { NextResponse, type NextRequest } from "next/server";
+
+interface Params {
+  id: string;
+}
+
+type RouteContext = {
+  params: Params;
+};
 
 // GET single category by ID
-export async function GET(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, context: RouteContext) {
   try {
     await connectToDB();
     const { id } = context.params;
     const category = await BlogCategoryModel.findById(id);
-
-    return NextResponse.json(category);
+    return NextResponse.json({ id });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch category" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch category" }, { status: 500 });
   }
 }
 
