@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import cloudinary from "@/lib/cloudinary";
 import WebSettings from "@/models/WebSettingsModel";
 
-
-
-
 // UPDATE slider
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
 
-    const formData = await req.formData();
-    const data = {};
+    const { id } = context.params; // ✅ get ID from context
+    const formData = await request.formData(); // ✅ use request, not req
+    const data: Record<string> = {};
 
     // Append all fields from formData
     const fields = [
@@ -52,6 +51,7 @@ export async function PUT(
         );
         uploadStream.end(buffer);
       });
+
       data.image = {
         url: uploadedImage.secure_url,
         public_url: uploadedImage.secure_url,
@@ -60,7 +60,7 @@ export async function PUT(
     }
 
     // Update document
-    const updatedWeb = await WebSettings.findByIdAndUpdate(params.id, data, {
+    const updatedWeb = await WebSettings.findByIdAndUpdate(id, data, {
       new: true,
     });
 
