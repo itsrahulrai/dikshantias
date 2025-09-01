@@ -8,20 +8,19 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
     await connectToDB();
 
-    const category = await BlogCategoryModel.findById(id);
+    const category = await BlogCategoryModel.findById(params.id);
     if (!category) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
     return NextResponse.json(category, { status: 200 });
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: "Failed to fetch category" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to fetch category" },
+      { status: 500 }
+    );
   }
 }
 
@@ -31,12 +30,11 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
     await connectToDB();
     const body = await req.json();
 
     const updatedCategory = await BlogCategoryModel.findByIdAndUpdate(
-      id,
+      params.id,
       body,
       { new: true }
     );
@@ -47,10 +45,10 @@ export async function PUT(
 
     return NextResponse.json(updatedCategory, { status: 200 });
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to update category" },
+      { status: 500 }
+    );
   }
 }
 
@@ -60,10 +58,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
     await connectToDB();
 
-    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(id);
+    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(params.id);
 
     if (!deletedCategory) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
@@ -71,9 +68,9 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Category deleted successfully" }, { status: 200 });
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to delete category" },
+      { status: 500 }
+    );
   }
 }
