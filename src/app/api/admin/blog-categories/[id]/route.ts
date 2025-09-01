@@ -5,10 +5,10 @@ import BlogCategoryModel from "@/models/BlogCategoryModel";
 // ✅ GET single blog category by ID
 export async function GET(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     await connectToDB();
 
     const category = await BlogCategoryModel.findById(id);
@@ -28,10 +28,10 @@ export async function GET(
 // ✅ UPDATE blog category
 export async function PUT(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     await connectToDB();
     const body = await req.json();
 
@@ -57,10 +57,10 @@ export async function PUT(
 // ✅ DELETE blog category
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
+    const { id } = params;
     await connectToDB();
 
     const deletedCategory = await BlogCategoryModel.findByIdAndDelete(id);
