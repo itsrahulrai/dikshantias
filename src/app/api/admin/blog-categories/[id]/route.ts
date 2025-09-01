@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next"; 
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } } // 👈 Correct typing
+  context: RouteContext<{ id: string }> // 👈 correct typing for params
 ) {
   try {
     await connectToDB();
 
-    const { id } = context.params; // 👈 get id from dynamic route
+    const { id } = context.params; // ✅ works now
     const category = await BlogCategoryModel.findById(id);
 
     if (!category) {
