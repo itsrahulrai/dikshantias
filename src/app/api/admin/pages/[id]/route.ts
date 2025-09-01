@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import PagesModel from "@/models/PagesModel";
 import cloudinary from "@/lib/cloudinary";
 
 // GET single page
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = await params;
+    const { id } = context.params;
     await connectToDB();
     const page = await PagesModel.findById(id);
     if (!page) {
-      return NextResponse.json({ error: "page not found" }, { status: 404 });
+      return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
     return NextResponse.json(page);
   } catch (error) {
@@ -21,18 +22,16 @@ export async function GET(
   }
 }
 
-
-// UPDATE Page
-// UPDATE Page
+// UPDATE Page (PUT)
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
+    const { id } = context.params;
     await connectToDB();
-    const { id } = params;
 
-    const formData = await req.formData();
+    const formData = await request.formData();
     const title = formData.get("title") as string;
     const slug = formData.get("slug") as string;
     const content = formData.get("content") as string;
@@ -49,7 +48,7 @@ export async function PUT(
     const index = formData.get("index") !== "false";
     const follow = formData.get("follow") !== "false";
 
-    // Find existing page (to check old image)
+    // Find existing page
     const existingPage = await PagesModel.findById(id);
     if (!existingPage) {
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
@@ -70,15 +69,13 @@ export async function PUT(
       follow,
     };
 
-    // Handle image update if provided
-    const imageFile = formData.get("image");
-    if (imageFile && typeof imageFile === "object") {
-      // Delete old image from Cloudinary (if exists)
+    // Handle image update
+    const imageFile = formData.get("image") as File | null;
+    if (imageFile && imageFile.size > 0) {
       if (existingPage.image?.public_id) {
         await cloudinary.uploader.destroy(existingPage.image.public_id);
       }
 
-      // Upload new image
       const buffer = Buffer.from(await imageFile.arrayBuffer());
       const uploadedImage = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -99,7 +96,6 @@ export async function PUT(
       };
     }
 
-    // Update in MongoDB
     const updatedPage = await PagesModel.findByIdAndUpdate(id, updateData, {
       new: true,
     });
@@ -114,17 +110,16 @@ export async function PUT(
   }
 }
 
-
-// UPDATE Page active status only
+// UPDATE Page active status (PATCH)
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     await connectToDB();
 
-    const { active } = await req.json();
+    const { active } = await request.json();
 
     const page = await PagesModel.findByIdAndUpdate(
       id,
@@ -145,11 +140,11 @@ export async function PATCH(
 
 // DELETE page
 export async function DELETE(
-  req: Request,
-  context: { params: Promise<{ id: string }> } 
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = context.params;
     await connectToDB();
 
     const page = await PagesModel.findById(id);
@@ -169,4 +164,3 @@ export async function DELETE(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
