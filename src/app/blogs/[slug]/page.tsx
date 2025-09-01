@@ -3,14 +3,13 @@
 import React from 'react';
 import BlogDetails from '@/component/BlogDetails';
 
-interface PageProps {
-  params: {
-    slug: string;
-  };
-}
+type PageProps = {
+  params: Awaited<{ slug: string }>; // unwraps Promise
+};
 
-const Page: React.FC<PageProps> = ({ params }) => {
-  return <BlogDetails slug={params.slug} />;
+const Page = async ({ params }: { params: Promise<{ slug: string }> }) => {
+  const { slug } = await params;
+  return <BlogDetails slug={slug} />;
 };
 
 export default Page;
