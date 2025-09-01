@@ -1,39 +1,38 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import cloudinary from "@/lib/cloudinary"; 
 import { connectToDB } from "@/lib/mongodb";
 import TestimonialModel from "@/models/TestimonialsModel";
 
-
 // GET single Testimonial
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = context.params;
     await connectToDB();
-    const Testimonial = await TestimonialModel.findById(id);
-    if (!Testimonial) {
+
+    const testimonial = await TestimonialModel.findById(id);
+    if (!testimonial) {
       return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
-    return NextResponse.json(Testimonial);
-  } catch (error) {
+    return NextResponse.json(testimonial);
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-
+// UPDATE Testimonial (with image upload)
 export async function PUT(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
     await connectToDB();
+    const { id } = context.params;
 
-    // ✅ Await params before using
-    const { id } = await context.params;
-
-    const formData = await req.formData();
+    const formData = await request.formData();
     const name = formData.get("name") as string;
     const rank = formData.get("rank") as string;
     const year = formData.get("year") as string;
@@ -58,7 +57,7 @@ export async function PUT(
         await cloudinary.uploader.destroy(existing.image.public_id);
       }
 
-      const uploadResult = await new Promise((resolve, reject) => {
+      const uploadResult: any = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "Testimonials" },
           (error, result) => {
@@ -93,7 +92,7 @@ export async function PUT(
     );
 
     return NextResponse.json(updatedTestimonial, { status: 200 });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error updating Testimonial:", err);
     return NextResponse.json(
       { error: err.message || "Failed to update Testimonial" },
@@ -102,62 +101,57 @@ export async function PUT(
   }
 }
 
-
-
-
-// UPDATE Testimonial active status only
+// PATCH -> update only active status
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     await connectToDB();
 
-    const { active } = await req.json();
+    const { active } = await request.json();
 
-    const Testimonial = await TestimonialModel.findByIdAndUpdate(
+    const testimonial = await TestimonialModel.findByIdAndUpdate(
       id,
       { active },
       { new: true }
     );
 
-    if (!Testimonial) {
+    if (!testimonial) {
       return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
 
-    return NextResponse.json(Testimonial);
-  } catch (error) {
+    return NextResponse.json(testimonial);
+  } catch (error: any) {
     console.error("Failed to update active status:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// DELETE slider
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+// DELETE Testimonial
+export async function DELETE(
+  request: Request,
+  context: { params: { id: string } }
+) {
   try {
-    // await the params before using
-    const { params } = context;
-    const id = params.id;
-
+    const { id } = context.params;
     await connectToDB();
 
-    const Testimonial = await TestimonialModel.findById(id);
-    if (!Testimonial) {
+    const testimonial = await TestimonialModel.findById(id);
+    if (!testimonial) {
       return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
 
-    // Delete image from Cloudinary if exists
-    if (Testimonial.image?.public_id) {
-      await cloudinary.uploader.destroy(Testimonial.image.public_id);
+    if (testimonial.image?.public_id) {
+      await cloudinary.uploader.destroy(testimonial.image.public_id);
     }
 
     await TestimonialModel.findByIdAndDelete(id);
 
     return NextResponse.json({ message: "Testimonial deleted successfully" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to delete Testimonial:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
