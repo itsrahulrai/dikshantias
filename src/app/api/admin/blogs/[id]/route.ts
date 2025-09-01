@@ -45,7 +45,7 @@ export async function PUT(
 
     const formData = await request.formData();
 
-    const updateData: any = {
+    const updateData = {
       title: formData.get("title"),
       slug: formData.get("slug"),
       shortContent: formData.get("shortContent"),
@@ -79,7 +79,7 @@ export async function PUT(
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const uploadRes: any = await new Promise((resolve, reject) => {
+      const uploadRes = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "blogs" },
           (error, result) => {
