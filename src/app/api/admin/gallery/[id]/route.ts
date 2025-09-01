@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "Gallery not found" }, { status: 404 });
     }
     return NextResponse.json(gallery);
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -51,7 +51,7 @@ export async function PUT(
       }
 
       const buffer = Buffer.from(await imageFile.arrayBuffer());
-      const uploadedImage: any = await new Promise((resolve, reject) => {
+      const uploadedImage = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "sliders" },
           (error, result) => {
@@ -76,7 +76,7 @@ export async function PUT(
     await gallery.save();
 
     return NextResponse.json(gallery, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Error updating gallery:", err);
     return NextResponse.json(
       { error: err.message || "Failed to update gallery" },
@@ -107,7 +107,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(slider);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update active status:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -134,7 +134,7 @@ export async function DELETE(
     await GalleryModel.findByIdAndDelete(id);
 
     return NextResponse.json({ message: "Gallery deleted successfully" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to delete Gallery:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
