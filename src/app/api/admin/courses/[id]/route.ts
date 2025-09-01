@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
-import BlogModel from "@/models/BlogModel";
+import BlogsModel from "@/models/BlogsModel";
 
 // ✅ GET blog by ID
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
     await connectToDB();
     const { id } = context.params;
 
-    const blog = await BlogModel.findById(id);
+    const blog = await BlogsModel.findById(id);
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
