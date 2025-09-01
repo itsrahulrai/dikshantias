@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
-import type { RouteContext } from "next"; 
 import { connectToDB } from "@/lib/mongodb";
 import BlogsModel from "@/models/BlogsModel";
 import "@/models/BlogCategoryModel";
 import cloudinary from "@/lib/cloudinary";
 
+// ✅ Define RouteContext type
+type RouteContext<T extends Record<string, string>> = {
+  params: T;
+};
+
 // ✅ GET blog by ID
-
-
 export async function GET(
   request: Request,
   context: RouteContext<{ id: string }>
@@ -19,11 +21,12 @@ export async function GET(
     const blog = await BlogsModel.findById(id);
 
     if (!blog) {
-      return NextResponse.json({ error: "blog not found" }, { status: 404 });
+      return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
     return NextResponse.json(blog, { status: 200 });
   } catch (error: unknown) {
+    console.error("Error fetching blog:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to fetch blog" },
       { status: 500 }
@@ -31,20 +34,18 @@ export async function GET(
   }
 }
 
-
-
 // ✅ PUT - Update blog
 export async function PUT(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
     const { id } = context.params;
 
-    const formData = await req.formData();
+    const formData = await request.formData();
 
-    const updateData = {
+    const updateData: any = {
       title: formData.get("title"),
       slug: formData.get("slug"),
       shortContent: formData.get("shortContent"),
@@ -78,7 +79,7 @@ export async function PUT(
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const uploadRes = await new Promise((resolve, reject) => {
+      const uploadRes: any = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "blogs" },
           (error, result) => {
@@ -105,22 +106,25 @@ export async function PUT(
       { message: "Blog updated successfully", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error updating blog:", error);
-    return NextResponse.json({ error: error?.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to update blog" },
+      { status: 500 }
+    );
   }
 }
 
 // ✅ PATCH - Toggle blog active status
 export async function PATCH(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
     const { id } = context.params;
 
-    const { active } = await req.json();
+    const { active } = await request.json();
 
     const updatedBlog = await BlogsModel.findByIdAndUpdate(
       id,
@@ -136,16 +140,19 @@ export async function PATCH(
       { message: "Blog status updated", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error toggling blog status:", error);
-    return NextResponse.json({ error: error?.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to toggle status" },
+      { status: 500 }
+    );
   }
 }
 
 // ✅ DELETE - Remove blog
 export async function DELETE(
-  req: Request,
-  context: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
@@ -166,8 +173,11 @@ export async function DELETE(
       { message: "Blog deleted successfully" },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error deleting blog:", error);
-    return NextResponse.json({ error: error?.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to delete blog" },
+      { status: 500 }
+    );
   }
 }
