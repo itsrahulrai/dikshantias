@@ -20,7 +20,7 @@ export async function GET(
     }
 
     return NextResponse.json(blog, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json(
       { error: error?.message || "Failed to fetch blog" },
       { status: 500 }
@@ -39,7 +39,7 @@ export async function PUT(
 
     const formData = await req.formData();
 
-    const updateData: any = {
+    const updateData = {
       title: formData.get("title"),
       slug: formData.get("slug"),
       shortContent: formData.get("shortContent"),
@@ -73,7 +73,7 @@ export async function PUT(
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const uploadRes: any = await new Promise((resolve, reject) => {
+      const uploadRes = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "blogs" },
           (error, result) => {
@@ -100,7 +100,7 @@ export async function PUT(
       { message: "Blog updated successfully", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating blog:", error);
     return NextResponse.json({ error: error?.message }, { status: 500 });
   }
@@ -131,7 +131,7 @@ export async function PATCH(
       { message: "Blog status updated", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error toggling blog status:", error);
     return NextResponse.json({ error: error?.message }, { status: 500 });
   }
@@ -161,7 +161,7 @@ export async function DELETE(
       { message: "Blog deleted successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting blog:", error);
     return NextResponse.json({ error: error?.message }, { status: 500 });
   }
