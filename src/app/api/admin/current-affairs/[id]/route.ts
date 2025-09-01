@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server"; 
+import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import CurrentAffairs from "@/models/CurrentAffair";
 import cloudinary from "@/lib/cloudinary";
@@ -6,69 +7,41 @@ import BlogCategoryModel from "@/models/BlogCategoryModel";
 import SubCategoryModel from "@/models/SubCategoryModel";
 import mongoose from "mongoose";
 
-
-// Get single current affair
-// export async function GET(
-//   req: Request,
-//   context: { params: { id: string } }
-// ) {
-//   try {
-//     const { params } = context;
-//     const { id } = await params;
-//     await connectToDB();
-
-//     const currentAffair = await CurrentAffairs.findById(id)
-//       .populate({ path: "category", model: BlogCategoryModel })
-//       .populate({ path: "subCategory", model: SubCategoryModel });
-
-//     if (!currentAffair) {
-//       return NextResponse.json({ error: "Current Affairs not found" }, { status: 404 });
-//     }
-
-//     return NextResponse.json(currentAffair);
-//   } catch (error) {
-//     return NextResponse.json({ error: error.message }, { status: 500 });
-//   }
-// }
-
-
-
-// GET Current Affair by ID or Slug
-export async function GET(req: Request, context: { params: { id: string } }) {
+// ✅ GET Current Affair by ID or Slug
+export async function GET(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   const { id } = context.params;
 
   try {
     await connectToDB();
 
     let currentAffair;
-
     if (mongoose.Types.ObjectId.isValid(id)) {
-      // If valid ObjectId, fetch by _id
       currentAffair = await CurrentAffairs.findById(id)
         .populate({ path: "category", model: BlogCategoryModel })
         .populate({ path: "subCategory", model: SubCategoryModel });
     } else {
-      // Otherwise, fetch by slug
       currentAffair = await CurrentAffairs.findOne({ slug: id, active: true })
         .populate({ path: "category", model: BlogCategoryModel })
         .populate({ path: "subCategory", model: SubCategoryModel });
     }
 
     if (!currentAffair) {
-      return NextResponse.json({ error: "Current Affairs not found" }, { status: 404 });
+      return NextResponse.json({ error: "Current Affair not found" }, { status: 404 });
     }
 
-    return NextResponse.json(currentAffair);
-  } catch (error) {
-    console.error("GET Current Affair Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(currentAffair, { status: 200 });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to fetch current affair" },
+      { status: 500 }
+    );
   }
 }
 
-
-
-
-// Utility: Upload to Cloudinary
+// 🔹 Utility: Upload to Cloudinary
 async function uploadToCloudinary(file: Blob) {
   const buffer = Buffer.from(await file.arrayBuffer());
   return new Promise((resolve, reject) => {
@@ -83,21 +56,19 @@ async function uploadToCloudinary(file: Blob) {
   });
 }
 
-// PUT: Update existing current affair
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+// ✅ UPDATE Current Affair
+export async function PUT(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
     await connectToDB();
+    const { id } = context.params;
 
-    const formData = await req.formData();
-    console.log("➡️ Received Update Request for ID:", params.id);
-    console.log("➡️ FormData Entries:");
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
+    const formData = await request.formData();
+    const affair = await CurrentAffairs.findById(id);
 
-    const affair = await CurrentAffairs.findById(params.id);
     if (!affair) {
-      console.log("❌ No affair found with ID:", params.id);
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -120,19 +91,17 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const subCategoryId = formData.get("subCategory")?.toString();
     affair.subCategory = subCategoryId || undefined;
 
-    const active = formData.get("active") === "true";
-    affair.active = active;
+    affair.active = formData.get("active") === "true";
 
     // handle image upload
     const imageFile = formData.get("image") as Blob | null;
-    if (imageFile && (imageFile).size > 0) {
-      console.log("➡️ Uploading new image...");
+    if (imageFile && imageFile.size > 0) {
       if (affair.image?.public_id) {
         await cloudinary.uploader.destroy(affair.image.public_id).catch(() =>
           console.warn("⚠️ Failed to delete old image")
         );
       }
-      const uploadedImage = await uploadToCloudinary(imageFile);
+      const uploadedImage = (await uploadToCloudinary(imageFile)) as any;
       affair.image = {
         url: uploadedImage.secure_url,
         public_id: uploadedImage.public_id,
@@ -144,7 +113,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     if (imageAlt) affair.imageAlt = imageAlt;
 
     await affair.save();
-    console.log("✅ Affair Updated:", affair);
 
     const populated = await affair.populate([
       { path: "category", select: "name" },
@@ -152,38 +120,39 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     ]);
 
     return NextResponse.json(populated, { status: 200 });
-  } catch (err) {
-    console.error("❌ Error in PUT API:", err);
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: err.message || "Failed to update current affair" },
+      { error: error instanceof Error ? error.message : "Failed to update current affair" },
       { status: 500 }
     );
   }
 }
 
-
-// DELETE CurrentAffairs
-
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+// ✅ DELETE Current Affair
+export async function DELETE(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
-    const { params } = context;
-    const id = params.id;
+    const { id } = context.params;
     await connectToDB();
 
     const currentAffair = await CurrentAffairs.findById(id);
     if (!currentAffair) {
-      return NextResponse.json({ error: "Current Affairs not found" }, { status: 404 });
+      return NextResponse.json({ error: "Current Affair not found" }, { status: 404 });
     }
+
     if (currentAffair.image?.public_id) {
       await cloudinary.uploader.destroy(currentAffair.image.public_id);
     }
+
     await CurrentAffairs.findByIdAndDelete(id);
 
-    return NextResponse.json({ message: "Current Affairs deleted successfully" });
-  } catch (error) {
-    console.error("Failed to delete Current Affairs:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Current Affair deleted successfully" }, { status: 200 });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to delete current affair" },
+      { status: 500 }
+    );
   }
 }
-
-
