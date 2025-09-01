@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import SubCategoryModel from "@/models/SubCategoryModel";
 
+// ✅ Type for context params
+type Context = { params: { id: string } };
+
 // GET single subcategory
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: Context) {
   try {
-    const { id } = params; // ✅ no need for await
+    const { id } = params;
     await connectToDB();
 
     const subcategory = await SubCategoryModel.findById(id).populate(
@@ -33,14 +33,11 @@ export async function GET(
 }
 
 // UPDATE subcategory
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, { params }: Context) {
   try {
     await connectToDB();
     const { id } = params;
-    const { name, slug, active, category } = await req.json();
+    const { name, slug, active, category } = await request.json();
 
     if (!id) {
       return NextResponse.json(
@@ -77,19 +74,13 @@ export async function PUT(
   }
 }
 
-
-
-
 // UPDATE Subcategory active status only
-export async function PATCH(
-  req: Request,
-  { params }: PatchParams
-) {
+export async function PATCH(request: Request, { params }: Context) {
   try {
     const { id } = params;
     await connectToDB();
 
-    const body: PatchBody = await req.json();
+    const body = await request.json();
     const { active } = body;
 
     const subcategory = await SubCategoryModel.findByIdAndUpdate(
@@ -109,7 +100,6 @@ export async function PATCH(
   } catch (error: unknown) {
     console.error("Failed to update active status:", error);
 
-    // Ensure proper type-safe error handling
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -121,14 +111,9 @@ export async function PATCH(
   }
 }
 
-
 // DELETE subcategory
-export async function DELETE(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function DELETE(request: Request, { params }: Context) {
   try {
-    const { params } = await context; // <-- await context
     await connectToDB();
 
     const deleted = await SubCategoryModel.findByIdAndDelete(params.id);
