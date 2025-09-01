@@ -101,7 +101,7 @@ export async function PUT(
           console.warn("⚠️ Failed to delete old image")
         );
       }
-      const uploadedImage = (await uploadToCloudinary(imageFile)) as any;
+      const uploadedImage = (await uploadToCloudinary(imageFile))
       affair.image = {
         url: uploadedImage.secure_url,
         public_id: uploadedImage.public_id,
