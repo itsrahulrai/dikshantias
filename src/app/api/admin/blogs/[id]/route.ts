@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next"; 
 import { connectToDB } from "@/lib/mongodb";
 import BlogsModel from "@/models/BlogsModel";
 import "@/models/BlogCategoryModel";
 import cloudinary from "@/lib/cloudinary";
 
 // ✅ GET blog by ID
+
+
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
@@ -16,17 +19,19 @@ export async function GET(
     const blog = await BlogsModel.findById(id);
 
     if (!blog) {
-      return NextResponse.json({ error: "Blog not found" }, { status: 404 });
+      return NextResponse.json({ error: "blog not found" }, { status: 404 });
     }
 
     return NextResponse.json(blog, { status: 200 });
-  } catch (error) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error?.message || "Failed to fetch blog" },
+      { error: error instanceof Error ? error.message : "Failed to fetch blog" },
       { status: 500 }
     );
   }
 }
+
+
 
 // ✅ PUT - Update blog
 export async function PUT(
