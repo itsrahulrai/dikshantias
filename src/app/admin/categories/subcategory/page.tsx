@@ -196,11 +196,10 @@ const [showInsertModal, setShowInsertModal] = useState(false);
                     <td className="py-3 px-5 text-center">
                       <div className="flex justify-center gap-2">
                         <button
-                        onClick={() => {
-  setEditingSubcategory(undefined); // ✅ matches type
-  setShowInsertModal(true);
-}}
-
+                          onClick={() => {
+                            setEditingSubcategory(sub);
+                            setShowInsertModal(true);
+                          }}
                           className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-md hover:shadow-lg transition transform hover:scale-110"
                           title="Edit"
                         >
