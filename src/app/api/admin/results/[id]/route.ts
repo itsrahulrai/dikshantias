@@ -1,33 +1,37 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import cloudinary from "@/lib/cloudinary";
 import ResultModel from "@/models/ResultModel";
 
-// GET single slider
+// GET single result
 export async function GET(
-  req: Request,     
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = await params;
+    const { id } = context.params;
     await connectToDB();
     const result = await ResultModel.findById(id);
     if (!result) {
-      return NextResponse.json({ error: "result not found" }, { status: 404 });
+      return NextResponse.json({ error: "Result not found" }, { status: 404 });
     }
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// Update Result
-export async function PUT(req: Request) {
+// UPDATE result (with image upload)
+export async function PUT(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
     await connectToDB();
 
-    const formData = await req.formData();
-    const id = formData.get("id") as string;
+    const formData = await request.formData();
+    const id = context.params.id;
     const name = formData.get("name") as string;
     const rank = Number(formData.get("rank"));
     const service = formData.get("service") as string;
@@ -35,10 +39,12 @@ export async function PUT(req: Request) {
     const imageFile = formData.get("image") as File | null;
 
     if (!id) {
-      return NextResponse.json({ error: "Result ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Result ID is required" },
+        { status: 400 }
+      );
     }
 
-    // Find existing record
     const existingResult = await ResultModel.findById(id);
     if (!existingResult) {
       return NextResponse.json({ error: "Result not found" }, { status: 404 });
@@ -46,18 +52,14 @@ export async function PUT(req: Request) {
 
     let updatedImage = existingResult.image;
 
-    // If new image is uploaded
     if (imageFile && imageFile.size > 0) {
-      // Delete old image from Cloudinary
       if (existingResult.image?.public_id) {
         await cloudinary.uploader.destroy(existingResult.image.public_id);
       }
 
-      // Convert file to buffer
       const buffer = Buffer.from(await imageFile.arrayBuffer());
 
-      // Upload to Cloudinary
-      const uploadedImage = await new Promise((resolve, reject) => {
+      const uploadedImage: any = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "results" },
           (error, result) => {
@@ -75,7 +77,6 @@ export async function PUT(req: Request) {
       };
     }
 
-    // Update in DB
     const updatedResult = await ResultModel.findByIdAndUpdate(
       id,
       { name, rank, service, year, image: updatedImage },
@@ -83,25 +84,25 @@ export async function PUT(req: Request) {
     );
 
     return NextResponse.json(updatedResult, { status: 200 });
-  } catch (err) {
-    console.error("Error updating Result:", err);
+  } catch (error: any) {
+    console.error("Error updating Result:", error);
     return NextResponse.json(
-      { error: err.message || "Failed to update Result" },
+      { error: error.message || "Failed to update Result" },
       { status: 500 }
     );
   }
 }
 
-
-// UPDATE Result active status only
+// UPDATE Result active status
 export async function PATCH(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = context.params;
     await connectToDB();
-    const { active } = await req.json();
+
+    const { active } = await request.json();
     const result = await ResultModel.findByIdAndUpdate(
       id,
       { active },
@@ -113,34 +114,35 @@ export async function PATCH(
     }
 
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to update active Result:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-
-// DELETE Result
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+// DELETE result
+export async function DELETE(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
-    const { params } = context;
-    const id = params.id;
+    const { id } = context.params;
     await connectToDB();
+
     const result = await ResultModel.findById(id);
     if (!result) {
       return NextResponse.json({ error: "Result not found" }, { status: 404 });
     }
+
     if (result.image?.public_id) {
       await cloudinary.uploader.destroy(result.image.public_id);
     }
+
     await ResultModel.findByIdAndDelete(id);
+
     return NextResponse.json({ message: "Result deleted successfully" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to delete result:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
-
-
-
