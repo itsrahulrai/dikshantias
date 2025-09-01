@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next"; 
 import { connectToDB } from "@/lib/mongodb";
 import cloudinary from "@/lib/cloudinary";
 import Course, { ICourse } from "@/models/Course";
 import slugify from "slugify";
 
 // GET single course
+
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = context.params;
     await connectToDB();
+
+    const { id } = context.params;
     const course = await Course.findById(id);
+
     if (!course) {
-      return NextResponse.json({ error: "Course not found" }, { status: 404 });
+      return NextResponse.json({ error: "course not found" }, { status: 404 });
     }
-    return NextResponse.json(course);
+
+    return NextResponse.json(course, { status: 200 });
   } catch (error: unknown) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to fetch course" },
@@ -24,6 +29,7 @@ export async function GET(
     );
   }
 }
+
 
 // 🔹 Helper to upload image buffer to Cloudinary
 async function uploadImageToCloudinary(file: File) {
