@@ -8,12 +8,26 @@ import { CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import RichTextEditor from "@/component/admin/RichTextEditor";
 
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+interface SubCategory {
+  _id: string;
+  name: string;
+  slug: string;
+  category: Category;
+}
+
 export default function AddCurrentAffairsPage() {
   const router = useRouter();
   const pathname = usePathname();
 
   // Extract ID from URL if editing
-  const editId = pathname.split("/").pop();
+  // const editId = pathname.split("/").pop();
+  const editId = pathname ? pathname.split("/").pop() : null;
   const [currentAffairId, setCurrentAffairId] = useState<string | null>(null);
 
   // 📌 Basic Info
@@ -24,8 +38,8 @@ export default function AddCurrentAffairsPage() {
   const [active, setActive] = useState(true);
 
   // 📌 Category & Sub Category
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
 
@@ -98,7 +112,7 @@ export default function AddCurrentAffairsPage() {
      // Filter subcategories based on selected category
     const filteredSubCategories = subCategories.filter(
       (sub) => sub.category?._id?.toString() === category
-          || sub.category?.$oid === category
+          || sub.category?._id === category
     );
 
   // Submit

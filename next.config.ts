@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+const isDev = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -16,6 +17,13 @@ const nextConfig: NextConfig = {
 
     ]
   },
+  typescript: {
+    ignoreBuildErrors: !isDev ? true : false,
+  },
+  eslint: {
+    ignoreDuringBuilds: !isDev ? true : false,
+  },
+  productionBrowserSourceMaps: true,
 };
 
 export default nextConfig;

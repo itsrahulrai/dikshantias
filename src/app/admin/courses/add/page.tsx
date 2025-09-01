@@ -20,20 +20,20 @@ export default function AddCoursePage() {
 
     // new states
     const [courseMode, setCourseMode] = useState("");
-    const [lectures, setLectures] = useState("");
-    const [duration, setDuration] = useState("");
-    const [languages, setLanguages] = useState("");
-    const [displayOrder, setDisplayOrder] = useState("");
+    const [lectures, setLectures] = useState<string | "">("");
+    const [duration, setDuration] = useState<string | "">("");
+    const [languages, setLanguages] = useState<string | "">("");
+    const [displayOrder, setDisplayOrder] = useState<string | "">("");
 
     // 📌 Pricing
-    const [originalPrice, setOriginalPrice] = useState("");
-    const [price, setPrice] = useState("");
-    const [totalFee, setTotalFee] = useState("");
-    const [oneTimeFee, setOneTimeFee] = useState("");
-    const [firstInstallment, setFirstInstallment] = useState("");
-    const [secondInstallment, setSecondInstallment] = useState("");
-    const [thirdInstallment, setThirdInstallment] = useState("");
-    const [fourthInstallment, setFourthInstallment] = useState("");
+    const [originalPrice, setOriginalPrice] = useState<string | "">("");
+    const [price, setPrice] = useState<string | "">("");
+    const [totalFee, setTotalFee] = useState<string | "">("");
+    const [oneTimeFee, setOneTimeFee] = useState<string | "">("");
+    const [firstInstallment, setFirstInstallment] = useState<string | "">("");
+    const [secondInstallment, setSecondInstallment] = useState<string | "">("");
+    const [thirdInstallment, setThirdInstallment] = useState<string | "">("");
+    const [fourthInstallment, setFourthInstallment] = useState<string | "">("");
 
     // 📌 Media
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -268,7 +268,7 @@ export default function AddCoursePage() {
                             <input
                                 type="number"
                                 value={lectures}
-                                onChange={(e) => setLectures(e.target.value ? Number(e.target.value) : "")}
+                                onChange={(e) => setLectures(e.target.value ? e.target.value : "")}
                                 placeholder="Number"
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                                 required
@@ -307,7 +307,7 @@ export default function AddCoursePage() {
                             <input
                                 type="number"
                                 value={displayOrder}
-                                onChange={(e) => setDisplayOrder(e.target.value ? Number(e.target.value) : "")}
+                                onChange={(e) => setDisplayOrder(e.target.value ? e.target.value : "")}
                                 placeholder="Order"
                                 className="w-full border border-gray-300 px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-[#e94e4e]/40 focus:border-[#e94e4e] outline-none transition"
                             />
