@@ -16,8 +16,9 @@ interface Category {
 
 export default function EditBlogPage() {
   const router = useRouter();
-  const params = useParams();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+const params = useParams<{ id: string }>();
+const id = params ? (Array.isArray(params.id) ? params.id[0] : params.id) : null;
+
 
   const [loading, setLoading] = useState(true);
 
@@ -80,9 +81,12 @@ export default function EditBlogPage() {
   };
 
   // Fetch blog details
-  useEffect(() => {
-    if (id) fetchBlog();
-  }, [id]);
+useEffect(() => {
+  if (id) {
+    fetchBlog();
+  }
+}, [id]);
+
 
   const fetchBlog = async () => {
     try {
