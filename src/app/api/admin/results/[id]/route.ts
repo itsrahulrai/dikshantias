@@ -17,7 +17,7 @@ export async function GET(
       return NextResponse.json({ error: "Result not found" }, { status: 404 });
     }
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -59,7 +59,7 @@ export async function PUT(
 
       const buffer = Buffer.from(await imageFile.arrayBuffer());
 
-      const uploadedImage: any = await new Promise((resolve, reject) => {
+      const uploadedImage = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: "results" },
           (error, result) => {
@@ -84,7 +84,7 @@ export async function PUT(
     );
 
     return NextResponse.json(updatedResult, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating Result:", error);
     return NextResponse.json(
       { error: error.message || "Failed to update Result" },
@@ -114,7 +114,7 @@ export async function PATCH(
     }
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update active Result:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -141,7 +141,7 @@ export async function DELETE(
     await ResultModel.findByIdAndDelete(id);
 
     return NextResponse.json({ message: "Result deleted successfully" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to delete result:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
