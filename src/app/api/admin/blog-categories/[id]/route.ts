@@ -2,15 +2,17 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
-// ✅ GET single blog category by ID
+
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } } // 👈 Correct typing
 ) {
   try {
     await connectToDB();
 
-    const category = await BlogCategoryModel.findById(params.id);
+    const { id } = context.params; // 👈 get id from dynamic route
+    const category = await BlogCategoryModel.findById(id);
+
     if (!category) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
@@ -23,6 +25,7 @@ export async function GET(
     );
   }
 }
+
 
 // ✅ UPDATE blog category
 export async function PUT(
