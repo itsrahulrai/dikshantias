@@ -2,67 +2,78 @@ import { NextResponse } from "next/server";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
-// GET single category by ID
+// ✅ GET single blog category by ID
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = context.params;
     await connectToDB();
-    const category = await BlogCategoryModel.findById(params.id);
-    return NextResponse.json(category);
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch category" },
-      { status: 500 }
-    );
+
+    const category = await BlogCategoryModel.findById(id);
+    if (!category) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(category, { status: 200 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Failed to fetch category" }, { status: 500 });
   }
 }
 
-
-// Update category
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+// ✅ UPDATE blog category
+export async function PUT(
+  req: Request,
+  context: { params: { id: string } }
+) {
   try {
+    const { id } = context.params;
     await connectToDB();
+    const body = await req.json();
 
-    // Await params to resolve the Promise
-    const { id } = await params;
-
-    const { name, slug, active } = await req.json();
-
-    const updated = await BlogCategoryModel.findByIdAndUpdate(
+    const updatedCategory = await BlogCategoryModel.findByIdAndUpdate(
       id,
-      { name, slug, active },
+      body,
       { new: true }
     );
 
-    return NextResponse.json(updated);
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Failed to update category" },
-      { status: 500 }
-    );
+    if (!updatedCategory) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedCategory, { status: 200 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
   }
 }
 
-
-// DELETE category
+// ✅ DELETE blog category
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: { id: string } }
 ) {
   try {
+    const { id } = context.params;
     await connectToDB();
-    const { id } = await params;
-    await BlogCategoryModel.findByIdAndDelete(id);
 
-    return NextResponse.json({ message: "Category deleted" });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Failed to delete category" },
-      { status: 500 }
-    );
+    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(id);
+
+    if (!deletedCategory) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Category deleted successfully" }, { status: 200 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
   }
 }
