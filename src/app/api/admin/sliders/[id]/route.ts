@@ -1,34 +1,36 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import SliderModel from "@/models/SliderModel";
 import cloudinary from "@/lib/cloudinary";
 
 // GET single slider
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = await params;
+    const { id } = context.params;
     await connectToDB();
     const slider = await SliderModel.findById(id);
+
     if (!slider) {
       return NextResponse.json({ error: "Slider not found" }, { status: 404 });
     }
+
     return NextResponse.json(slider);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-
 // UPDATE slider
 export async function PUT(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = context.params;
     await connectToDB();
 
     const slider = await SliderModel.findById(id);
@@ -36,11 +38,11 @@ export async function PUT(
       return NextResponse.json({ error: "Slider not found" }, { status: 404 });
     }
 
-    const contentType = req.headers.get("content-type") || "";
+    const contentType = request.headers.get("content-type") || "";
 
     // 🔹 CASE 1: Update via JSON (active toggle only)
     if (contentType.includes("application/json")) {
-      const body = await req.json();
+      const body = await request.json();
       slider.active = body.active ?? slider.active;
       await slider.save();
       return NextResponse.json(slider);
@@ -51,10 +53,10 @@ export async function PUT(
       contentType.includes("multipart/form-data") ||
       contentType.includes("application/x-www-form-urlencoded")
     ) {
-      const formData = await req.formData();
+      const formData = await request.formData();
       const title = formData.get("title") as string;
       const displayOrder = parseInt(formData.get("displayOrder") as string);
-      const imageFile = formData.get("image");
+      const imageFile = formData.get("image") as File | null;
 
       let updatedImage = slider.image;
 
@@ -108,14 +110,14 @@ export async function PUT(
 
 // UPDATE slider active status only
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }>
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     await connectToDB();
 
-    const { active } = await req.json();
+    const { active } = await request.json();
 
     const slider = await SliderModel.findByIdAndUpdate(
       id,
@@ -135,12 +137,12 @@ export async function PATCH(
 }
 
 // DELETE slider
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+export async function DELETE(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
-    // await the params before using
-    const { params } = context;
-    const id = params.id;
-
+    const { id } = context.params;
     await connectToDB();
 
     const slider = await SliderModel.findById(id);
