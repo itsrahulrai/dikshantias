@@ -6,18 +6,18 @@ import { Trash2, Edit2, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import SubCategoryModal from "@/component/admin/SubCategoryModal";
 import ConfirmDialog from "@/component/admin/ConfirmDialog";
-
-interface SubCategory {
-  _id: string;
-  name: string;
-  slug: string;
-  category?: {
+interface BlogCategory {
     _id: string;
     name: string;
     slug: string;
-  };
-  active: boolean;
-  createdAt?: string;
+}
+
+interface SubCategory {
+    _id: string;
+    name: string;
+    slug: string;
+    active: boolean;
+    category: BlogCategory;
 }
 
 export default function SubCategoryPage() {
@@ -262,7 +262,7 @@ const [showInsertModal, setShowInsertModal] = useState(false);
           {/* Modal */}
           {showInsertModal && (
               <SubCategoryModal
-                  subcategory={editingSubcategory}
+                  subcategory={editingSubcategory ?? null}
                   onClose={() => setShowInsertModal(false)}
                   onSubmit={fetchSubcategories}
               />

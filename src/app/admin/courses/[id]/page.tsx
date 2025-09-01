@@ -30,14 +30,14 @@ export default function CourseFormPage() {
     const [displayOrder, setDisplayOrder] = useState<number | "">("");
 
     // 📌 Pricing
-    const [originalPrice, setOriginalPrice] = useState<number | "">("");
-    const [price, setPrice] = useState<number | "">("");
-    const [totalFee, setTotalFee] = useState<number | "">("");
-    const [oneTimeFee, setOneTimeFee] = useState<number | "">("");
-    const [firstInstallment, setFirstInstallment] = useState<number | "">("");
-    const [secondInstallment, setSecondInstallment] = useState<number | "">("");
-    const [thirdInstallment, setThirdInstallment] = useState<number | "">("");
-    const [fourthInstallment, setFourthInstallment] = useState<number | "">("");
+    const [originalPrice, setOriginalPrice] = useState<string | "">("");
+    const [price, setPrice] = useState<string | "">("");
+    const [totalFee, setTotalFee] = useState<string | "">("");
+    const [oneTimeFee, setOneTimeFee] = useState<string | "">("");
+    const [firstInstallment, setFirstInstallment] = useState<string | "">("");
+    const [secondInstallment, setSecondInstallment] = useState<string | "">("");
+    const [thirdInstallment, setThirdInstallment] = useState<string | "">("");
+    const [fourthInstallment, setFourthInstallment] = useState<string | "">("");
 
     // 📌 Media
     const [imageFile, setImageFile] = useState<File | null>(null);

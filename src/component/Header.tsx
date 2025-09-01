@@ -22,7 +22,7 @@ const Header: React.FC = () => {
     useEffect(() => {
         const fetchCurrentAffairs = async () => {
             try {
-                const res = await fetch('http://localhost:3000/api/admin/current-affairs');
+                const res = await fetch('/api/admin/current-affairs');
                 const data = await res.json();
                 setCurrentAffairs(data.filter((item: CurrentAffair) => item.active));
             } catch (error) {

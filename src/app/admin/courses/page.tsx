@@ -12,10 +12,12 @@ interface Course {
     title: string;
     active: boolean;
     lectures: number;
+    courseMode: string;
     duration: string;
     price?: number;
     image?: { url: string; alt?: string };
     createdAt?: string;
+    languages: string[];
 }
 
 export default function CoursePage() {
@@ -136,7 +138,7 @@ export default function CoursePage() {
                 filterStatus === "false" ? !course.active : true;
 
         const matchesMode = filterMode ? course.courseMode === filterMode : true;
-        const matchesLanguage = filterLanguage ? course.languages === filterLanguage : true;
+        const matchesLanguage = filterLanguage ? course.languages.includes(filterLanguage) : true;
         const matchesPrice =
             (!filterMinPrice || course.price! >= parseFloat(filterMinPrice)) &&
             (!filterMaxPrice || course.price! <= parseFloat(filterMaxPrice));
@@ -196,8 +198,8 @@ export default function CoursePage() {
                             className="pl-7 pr-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-[#e94e4e] focus:outline-none shadow-sm transition"
                         >
                             <option value="">All Languages</option>
-                            {Array.from(new Set(courses.map((c) => c.languages))).map((lang) => (
-                                <option key={lang} value={lang}>{lang}</option>
+                            {Array.from(new Set(courses.map((c) => c.languages))).map((lang, index) => (
+                                <option key={index} value={lang}>{lang}</option>
                             ))}
                         </select>
                     </div>

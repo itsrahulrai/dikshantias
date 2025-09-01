@@ -15,19 +15,19 @@ interface SubCategory {
     name: string;
     slug: string;
     active: boolean;
-    category: string; // category ID
+    category: BlogCategory;
 }
 
 interface SubCategoryModalProps {
+    subcategory?: SubCategory | null;
     onClose: () => void;
     onSubmit: () => void;
-    subcategory?: SubCategory;
 }
 
 export default function SubCategoryModal({
+    subcategory,
     onClose,
     onSubmit,
-    subcategory,
 }: SubCategoryModalProps) {
     const [name, setName] = useState("");
     const [slug, setSlug] = useState("");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/component/admin/AdminLayout";
 import { Globe, Mail, CheckCircle } from "lucide-react";
 import ImageUpload from "@/component/admin/ImageUpload";
@@ -118,8 +118,8 @@ export default function PagesPage() {
                                 >
                                     <span
                                         className={`p-2 rounded-md ${activeTab === item.key
-                                                ? "bg-white/20 text-white"
-                                                : "bg-gray-10 text-gray-600"
+                                            ? "bg-white/20 text-white"
+                                            : "bg-gray-10 text-gray-600"
                                             }`}
                                     >
                                         {item.icon}
@@ -251,12 +251,13 @@ export default function PagesPage() {
                                         <input
                                             type="text"
                                             name={key}
-                                            value={formData[key as keyof IWebSettings] || ""}
+                                            value={(formData[key as keyof IWebSettings] as string) ?? ""}
                                             onChange={handleChange}
                                             className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-[#E94E4E] transition"
                                         />
                                     </div>
                                 ))}
+
                             </div>
 
                             {/* Buttons */}

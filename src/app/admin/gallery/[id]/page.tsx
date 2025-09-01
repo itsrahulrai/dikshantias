@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 export default function EditGalleryPage() {
     const router = useRouter();
     const params = useParams();
-    const galleryId = params.id;
+    const galleryId = params.id as string ?? "";
 
     // Gallery Info
     const [title, setTitle] = useState("");

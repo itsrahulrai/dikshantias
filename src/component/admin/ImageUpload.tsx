@@ -10,7 +10,7 @@
   }: {
     onImageSelect: (file: File) => void;
     isLoading?: boolean;
-    initialImage?: string; // 👈 can be existing image URL
+    initialImage?: string | null;
   }) {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
 
