@@ -3,15 +3,15 @@ import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
-
+// ✅ GET category by ID
 export async function GET(
   request: Request,
-  context: RouteContext<{ id: string }> // 👈 correct typing for params
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
 
-    const { id } = context.params; // ✅ works now
+    const { id } = context.params;
     const category = await BlogCategoryModel.findById(id);
 
     if (!category) {
@@ -27,18 +27,17 @@ export async function GET(
   }
 }
 
-
-// ✅ UPDATE blog category
+// ✅ UPDATE category
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }> // 👈 same as GET
 ) {
   try {
     await connectToDB();
-    const body = await req.json();
+    const body = await request.json();
 
     const updatedCategory = await BlogCategoryModel.findByIdAndUpdate(
-      params.id,
+      context.params.id,
       body,
       { new: true }
     );
@@ -56,15 +55,15 @@ export async function PUT(
   }
 }
 
-// ✅ DELETE blog category
+// ✅ DELETE category
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: RouteContext<{ id: string }> // 👈 same fix
 ) {
   try {
     await connectToDB();
 
-    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(params.id);
+    const deletedCategory = await BlogCategoryModel.findByIdAndDelete(context.params.id);
 
     if (!deletedCategory) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
