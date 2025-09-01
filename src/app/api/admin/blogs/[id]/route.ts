@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next"; 
 import { connectToDB } from "@/lib/mongodb";
 import BlogCategoryModel from "@/models/BlogCategoryModel";
 
 // ✅ GET blog category by ID
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
@@ -29,7 +30,7 @@ export async function GET(
 // ✅ UPDATE blog category
 export async function PUT(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
@@ -57,7 +58,7 @@ export async function PUT(
 // ✅ DELETE blog category
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
