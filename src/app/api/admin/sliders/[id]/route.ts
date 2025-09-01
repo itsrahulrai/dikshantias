@@ -31,7 +31,7 @@ export async function PUT(
     const { id } = await context.params;
     await connectToDB();
 
-    let slider = await SliderModel.findById(id);
+    const slider = await SliderModel.findById(id);
     if (!slider) {
       return NextResponse.json({ error: "Slider not found" }, { status: 404 });
     }

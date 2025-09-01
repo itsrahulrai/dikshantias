@@ -55,7 +55,7 @@ export async function PUT(
       return NextResponse.json({ error: "Page not found" }, { status: 404 });
     }
 
-    let updateData = {
+    const updateData = {
       title,
       slug,
       content,
