@@ -6,38 +6,40 @@ import cloudinary from "@/lib/cloudinary";
 
 // ✅ GET blog by ID
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
     await connectToDB();
 
-    const { id } = params;
-    const blog = await BlogsModel.findById(id).populate("category").lean();
+    const { id } = context.params;
+    const blog = await BlogsModel.findById(id);
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
     return NextResponse.json(blog, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching blog by ID:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || "Failed to fetch blog" },
+      { status: 500 }
+    );
   }
 }
 
 // ✅ PUT - Update blog
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await connectToDB();
-    const { id } = params;
+    const { id } = context.params;
 
     const formData = await req.formData();
 
-    const updateData = {
+    const updateData: any = {
       title: formData.get("title"),
       slug: formData.get("slug"),
       shortContent: formData.get("shortContent"),
@@ -56,7 +58,6 @@ export async function PUT(
       follow: JSON.parse(formData.get("follow") as string),
     };
 
-    // Find existing blog
     const existingBlog = await BlogsModel.findById(id);
     if (!existingBlog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
@@ -65,16 +66,14 @@ export async function PUT(
     // Handle new image upload
     const imageFile = formData.get("image") as File | null;
     if (imageFile) {
-      // Delete old image from Cloudinary if it exists
       if (existingBlog.image?.public_id) {
         await cloudinary.uploader.destroy(existingBlog.image.public_id);
       }
 
-      // Upload new image
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const uploadRes = await new Promise((resolve, reject) => {
+      const uploadRes: any = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "blogs" },
           (error, result) => {
@@ -85,12 +84,10 @@ export async function PUT(
         stream.end(buffer);
       });
 
-      const uploaded = uploadRes;
-
       updateData.image = {
-        url: uploaded.secure_url,
-        public_url: uploaded.url,
-        public_id: uploaded.public_id,
+        url: uploadRes.secure_url,
+        public_url: uploadRes.url,
+        public_id: uploadRes.public_id,
         alt: formData.get("imageAlt") as string,
       };
     }
@@ -103,22 +100,20 @@ export async function PUT(
       { message: "Blog updated successfully", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating blog:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error?.message }, { status: 500 });
   }
 }
-
-
 
 // ✅ PATCH - Toggle blog active status
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await connectToDB();
-    const { id } = params;
+    const { id } = context.params;
 
     const { active } = await req.json();
 
@@ -136,28 +131,26 @@ export async function PATCH(
       { message: "Blog status updated", blog: updatedBlog },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error toggling blog status:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error?.message }, { status: 500 });
   }
 }
-
 
 // ✅ DELETE - Remove blog
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     await connectToDB();
-    const { id } = params;
+    const { id } = context.params;
 
     const blog = await BlogsModel.findById(id);
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
-    // If blog has image on Cloudinary, delete it
     if (blog.image?.public_id) {
       await cloudinary.uploader.destroy(blog.image.public_id);
     }
@@ -168,8 +161,8 @@ export async function DELETE(
       { message: "Blog deleted successfully" },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error deleting blog:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error?.message }, { status: 500 });
   }
 }
