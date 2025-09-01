@@ -143,7 +143,7 @@ const [showInsertModal, setShowInsertModal] = useState(false);
           <h2 className="text-xl font-semibold text-gray-700">All Sub Categories</h2>
           <button
            onClick={() => {
-  setEditingSubcategory(undefined); // ✅ matches type
+  setEditingSubcategory(null); // ✅ matches type
   setShowInsertModal(true);
 }}
 
