@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import SubCategoryModel from "@/models/SubCategoryModel";
 
-// ✅ Type for context params
-type Context = { params: { id: string } };
-
 // GET single subcategory
-export async function GET(request: Request, { params }: Context) {
+export async function GET(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     await connectToDB();
 
     const subcategory = await SubCategoryModel.findById(id).populate(
@@ -33,10 +34,13 @@ export async function GET(request: Request, { params }: Context) {
 }
 
 // UPDATE subcategory
-export async function PUT(request: Request, { params }: Context) {
+export async function PUT(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
     await connectToDB();
-    const { id } = params;
+    const { id } = context.params;
     const { name, slug, active, category } = await request.json();
 
     if (!id) {
@@ -75,13 +79,15 @@ export async function PUT(request: Request, { params }: Context) {
 }
 
 // UPDATE Subcategory active status only
-export async function PATCH(request: Request, { params }: Context) {
+export async function PATCH(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     await connectToDB();
 
-    const body = await request.json();
-    const { active } = body;
+    const { active } = await request.json();
 
     const subcategory = await SubCategoryModel.findByIdAndUpdate(
       id,
@@ -99,24 +105,23 @@ export async function PATCH(request: Request, { params }: Context) {
     return NextResponse.json(subcategory, { status: 200 });
   } catch (error: unknown) {
     console.error("Failed to update active status:", error);
-
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    return NextResponse.json(
-      { error: "Unknown server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Unknown server error" }, { status: 500 });
   }
 }
 
 // DELETE subcategory
-export async function DELETE(request: Request, { params }: Context) {
+export async function DELETE(
+  request: Request,
+  context: RouteContext<{ id: string }>
+) {
   try {
+    const { id } = context.params;
     await connectToDB();
 
-    const deleted = await SubCategoryModel.findByIdAndDelete(params.id);
+    const deleted = await SubCategoryModel.findByIdAndDelete(id);
 
     return deleted
       ? NextResponse.json({ message: "Subcategory deleted successfully" })
