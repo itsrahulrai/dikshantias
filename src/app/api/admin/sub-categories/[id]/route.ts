@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import type { RouteContext } from "next";
 import { connectToDB } from "@/lib/mongodb";
 import SubCategoryModel from "@/models/SubCategoryModel";
 
 // GET single subcategory
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     const { id } = context.params;
@@ -35,7 +36,7 @@ export async function GET(
 // UPDATE subcategory
 export async function PUT(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
@@ -80,7 +81,7 @@ export async function PUT(
 // UPDATE Subcategory active status only
 export async function PATCH(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     const { id } = context.params;
@@ -114,7 +115,7 @@ export async function PATCH(
 // DELETE subcategory
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     const { id } = context.params;
