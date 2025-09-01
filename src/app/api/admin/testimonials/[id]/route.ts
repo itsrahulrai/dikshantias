@@ -7,7 +7,7 @@ import TestimonialModel from "@/models/TestimonialsModel";
 // GET single Testimonial
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     const { id } = context.params;
@@ -26,7 +26,7 @@ export async function GET(
 // UPDATE Testimonial (with image upload)
 export async function PUT(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     await connectToDB();
@@ -104,7 +104,7 @@ export async function PUT(
 // PATCH -> update only active status
 export async function PATCH(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     const { id } = context.params;
@@ -132,7 +132,7 @@ export async function PATCH(
 // DELETE Testimonial
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } }
+  context: RouteContext<{ id: string }>
 ) {
   try {
     const { id } = context.params;
