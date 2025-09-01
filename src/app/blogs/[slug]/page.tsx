@@ -1,14 +1,12 @@
-'use client';
-
 import React from 'react';
 import BlogDetails from '@/component/BlogDetails';
 
-type PageProps = {
-  params: Awaited<{ slug: string }>; // unwraps Promise
-};
+interface PageProps {
+  params: Promise<{ slug: string }>; // Next.js gives it as a Promise
+}
 
-const Page = async ({ params }: { params: Promise<{ slug: string }> }) => {
-  const { slug } = await params;
+const Page = async ({ params }: PageProps) => {
+  const { slug } = await params; // ✅ await to unwrap
   return <BlogDetails slug={slug} />;
 };
 
